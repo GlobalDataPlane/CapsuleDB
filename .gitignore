@@ -1,0 +1,36 @@
+
+.cproject
+.dep/
+.project
+.settings/
+.idea/
+.DS_Store
+.vscode
+
+# make and build files
+*.lst
+*.o
+*.eep
+*.lss
+*.map
+*.sym
+
+# sgx specific
+app
+enclave.signed.so
+enclave.so
+
+.config_HW_DEBUG_x64
+App/Enclave_u.c
+App/Enclave_u.h
+Enclave/Enclave_t.c
+Enclave/Enclave_t.h
+
+# our framework
+measurments
+
+bazel-bin
+bazel-my-project
+bazel-out
+bazel-testlogs
+a.out
