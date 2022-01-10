@@ -1,11 +1,8 @@
-#include <string>
-#include <tuple>
-#include <vector>
-#include <iostream>
-#include "bloom/bloom_filter.hpp"
-#include "capsuleBlock.hh"
-#include "fakeCapsule.hh"
 #include "level.hh"
+
+#include <tuple>
+#include <iostream>
+#include "fakeCapsule.hh"
 
 Level::Level() {
     Level(-1, -1);

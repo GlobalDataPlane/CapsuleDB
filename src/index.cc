@@ -2,15 +2,10 @@
  * This file manages and generates new indices for capsuleDB.  It can produce both full and partial indices.
  */
 
-#include <string>
-#include <tuple>
-#include <cmath>
-#include <vector>
-#include "bloom/bloom_filter.hpp"
-#include "capsuleBlock.hh"
 #include "index.hh"
-#include "level.hh"
+
 #include <iostream>
+#include "bloom/bloom_filter.hpp"
 
 CapsuleIndex::CapsuleIndex() {
     CapsuleIndex(-1);

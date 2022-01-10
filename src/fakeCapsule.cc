@@ -1,11 +1,10 @@
-#include <string>
+#include "fakeCapsule.hh"
+
 #include <fstream>
 #include <openssl/sha.h>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <sstream>
-#include "capsuleBlock.hh"
-#include "fakeCapsule.hh"
 #include <iostream>
 
 void sha256_string(const char *string, char outputBuffer[65])

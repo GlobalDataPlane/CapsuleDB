@@ -8,11 +8,11 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <iostream>
 #include "memtable_new.hpp"
 #include "absl/strings/string_view.h"
 #include "index.hh"
 #include "kvs_include/capsule.h"
-//#include "../benchmark.h"
 
 // using namespace asylo;
 

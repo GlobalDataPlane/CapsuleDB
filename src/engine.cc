@@ -11,12 +11,10 @@
  * bazel run //src:capsuleDB
  */
 
-#include <iostream>
-#include <string>
+#include "engine.hh"
+
 #include "memtable_new.hpp"
 #include "common.h"
-#include "engine.hh"
-#include "kvs_include/capsule.h"
 
 // using namespace asylo;
 

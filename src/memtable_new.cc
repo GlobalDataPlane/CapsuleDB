@@ -1,10 +1,8 @@
-#include <iostream>
 #include "memtable_new.hpp"
+
+#include <iostream>
 #include "asylo/util/logging.h"
-// #include "common.h"
-// #include "../kvs_include/capsule.h"
 #include "capsuleBlock.hh"
-#include "index.hh"
 #include "level.hh"
 
 Memtable::Memtable() {
