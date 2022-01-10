@@ -1,0 +1,121 @@
+//
+// Copyright 2018 Asylo authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+syntax = "proto2";
+
+package hello_world;
+
+import "asylo/enclave.proto";
+import "src/proto/capsule.proto";
+import "src/translator_server.proto";
+
+
+// Extension to EnclaveInput for use with HelloWorld enclave.
+message HelloInput {
+  optional string to_greet = 1;
+}
+
+message HelloOutput {
+  optional string greeting_message = 1;
+}
+
+
+message EnclaveResponder {
+  optional int64 responder = 1;
+}
+
+message HotMsg {
+  optional int64 buffer = 1;
+  optional string enclave_id = 2;
+}
+
+extend asylo.EnclaveLoadConfig {
+  optional EnclaveResponder enclave_r = 8086; 
+}
+
+message KVS_Server_Config {
+  optional string server_address = 1;
+  optional int32 port = 2;
+}
+
+message MP_Lambda_Input {
+  optional string coordinator = 1;
+  optional string algorithm = 2;
+
+  optional string scenario = 3;
+  optional string start = 4;
+
+  optional string goal = 5;
+  optional string min = 6;
+  optional string max = 7;
+  optional string robot = 8;
+  optional string time_limit = 9;
+  optional string env = 10;
+
+  optional string check_resolution = 11;
+  optional string discretization = 12;
+  optional string is_float = 13;
+  optional string problem_id = 14;
+  optional string goal_radius = 15;
+  optional string env_frame = 16;
+  optional string jobs = 17;
+
+  optional int64 time_start = 18; 
+}
+
+// Input for a GrpcClientEnclave.
+message GrpcClientEnclaveInput {
+  // The address of the server to contact.
+  optional string server_address = 1;
+
+  // The request for the GetTranslation RPC.
+  optional examples.grpc_server.RetrieveKeyPairRequest key_pair_request = 2;
+}
+
+// Output for a GrpcClientEnclave.
+message GrpcClientEnclaveOutput {
+  // The response from the GetTranslation RPC.
+  optional examples.grpc_server.RetrieveKeyPairResponse key_pair_response = 1;
+}
+
+message CoordinatorParam {
+  optional int64 circ_buffer = 1;
+}
+
+message ActorParam {
+  optional int64 is_actor = 1;
+}
+
+message CryptoParam {
+  optional bytes key = 3;
+}
+
+extend asylo.EnclaveInput {
+  optional HelloInput enclave_input_hello = 8086;
+  optional CapsulePDU input_dc = 8087;
+  optional HotMsg buffer = 8088;
+  optional EnclaveResponder enclave_responder = 8089;
+  optional KVS_Server_Config kvs_server_config = 8090;
+  optional MP_Lambda_Input lambda_input = 8091;
+  optional CoordinatorParam is_coordinator = 8092;
+  optional ActorParam is_actor_thread = 8093;
+  optional CryptoParam crypto_param = 8094; 
+}
+
+extend asylo.EnclaveOutput {
+  optional HelloOutput enclave_output_hello = 8088;
+  optional CapsulePDU output_dc = 8089;
+}

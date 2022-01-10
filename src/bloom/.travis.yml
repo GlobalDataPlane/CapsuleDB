@@ -1,0 +1,11 @@
+dist: bionic
+
+language: cpp
+
+sudo: required
+
+compiler:
+  - gcc
+
+script:
+  - make clean all

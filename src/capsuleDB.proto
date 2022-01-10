@@ -1,0 +1,35 @@
+syntax = "proto2";
+
+package capsuleDB;
+
+import "asylo/enclave.proto";
+
+message CapsuleDBConfig {
+    optional int32 blockSize = 1;
+}
+
+extend .asylo.EnclaveLoadConfig {
+    optional CapsuleDBConfig dbConfig = 9001;
+}
+
+message DBRequest { 
+    message kvs_payload {
+        optional string key = 1;
+        optional string value = 2;
+        optional int32 timestamp = 3;
+        optional string messageType = 4;
+    }
+
+    optional int32 requestingEnclaveID = 1;
+    optional string requestedKey = 2;
+    optional kvs_payload payload = 3;
+}  
+
+
+extend .asylo.EnclaveInput {
+    optional DBRequest capsuleDBEnclaveInput = 9001;
+}
+
+extend .asylo.EnclaveOutput {
+    optional DBRequest capsuleDBEnclaveOutput = 9001;
+}

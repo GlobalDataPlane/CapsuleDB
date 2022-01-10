@@ -1,0 +1,17 @@
+
+syntax = "proto2";
+package hello_world;
+
+message CapsulePDU {
+
+  optional string payload_in_transit = 1; // encrypted payload
+  optional int64 sender = 2;
+  optional bytes signature = 3;
+
+  optional bytes prevHash = 4; // Hash ptr to the previous record, not needed for the minimal prototype
+  optional bytes hash = 5; // Hash of pdu
+
+  optional int64 timestamp = 6; //timestamp
+  optional string msgType = 7; // type of msg (e.g. EOE, RTS, SYNC)
+
+}
