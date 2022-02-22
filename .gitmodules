@@ -1,0 +1,3 @@
+[submodule "bloom"]
+	path = bloom
+	url = git@github.com:ArashPartow/bloom.git

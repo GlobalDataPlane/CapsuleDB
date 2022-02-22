@@ -5,6 +5,7 @@
 // TODO: currently we get timestamp by ocall, we need optimization here
 #include <sys/time.h>
 #include "../crypto.h"
+#include "../common.h"
 
 std::string delim_str = "@@@";
 char delim = ';';
@@ -31,17 +32,17 @@ namespace asylo {
         std::stringstream ss(payload_l_s);
         std::string txn_timestamp, txn_msgType, key, value;
 
-        std::vector<std::string> split = absl::StrSplit(payload_l_s, delim_str, absl::SkipEmpty());
+        std::vector<std::string> split = absl::StrSplit(payload_l_s, delim_str);
         
-        if(split.size() % 4 != 0){
+        if((split.size() -1) % 4 != 0){
             LOG(ERROR) << "invalid payload size " << split.size();
             for(int i = 0; i < split.size(); i+=1) {
-                LOG(ERROR) << i << " " << split.at(4);
+                LOG(ERROR) << i << " " << split[i];
             }
             return payload_l;
         }
 
-        for (int i=0; i < (split.size() / 4)  * 4; i+=4) {
+        for (int i=0; i < ((split.size()-1) / 4)  * 4; i+=4) {
             kvs_payload payload;
             txn_timestamp = split.at(i);
             txn_msgType = split.at(i + 1);
@@ -89,14 +90,14 @@ namespace asylo {
         // verify hash matches
         bool hash_result = verify_hash(dc);
         if (!hash_result) {
-            LOGI << "hash verification failed!!!";
+            std::cout << "hash verification failed!!!";
             return false;
         }
         // LOG(INFO) << "after verify_hash";
         // verify signature
         bool sig_result = verify_signature(dc, verifying_key);
         if (!sig_result) {
-            LOGI << "signature verification failed!!!";
+            std::cout << "signature verification failed!!!";
             return false;
         }
 
@@ -104,14 +105,14 @@ namespace asylo {
         // if (dc->prevHash == "init") return true; // sender's first pdu
         // auto got = m_eoe_hashes->find(dc->sender);
         // if (got == m_eoe_hashes->end()){
-        //     LOGI << "prevHash verification failed!!! expected prevHash not found.";
+        //     std::cout << "prevHash verification failed!!! expected prevHash not found.";
         //     return false;
         // } else {
         //     bool prev_hash_result = got->second.first == dc->prevHash;
         //     if (!prev_hash_result) {
-        //         LOGI << "prevHash verification failed!!!";
-        //         LOGI << "expected: " << got->second.first;
-        //         LOGI << "received: " << dc->prevHash;
+        //         std::cout << "prevHash verification failed!!!";
+        //         std::cout << "expected: " << got->second.first;
+        //         std::cout << "received: " << dc->prevHash;
         //         return false;
         //     }
         // }
@@ -119,10 +120,13 @@ namespace asylo {
         return true;
     }
 
-    bool encrypt_payload_l(capsule_pdu *dc) {
+    bool encrypt_payload_l(capsule_pdu *dc, bool encryption_needed) {
         std::string aggregated = serialize_payload_l(dc->payload_l);
+        if (!encryption_needed){
+            dc->payload_in_transit = aggregated;
+            return true;
+        }
         std::string encrypted_aggregated;
-
         ASSIGN_OR_RETURN_FALSE(encrypted_aggregated, EncryptMessage(aggregated));
         dc->payload_in_transit = encrypted_aggregated;
         return true;
@@ -132,7 +136,7 @@ namespace asylo {
         std::string decrypted_aggregated;
 
         ASSIGN_OR_RETURN_FALSE(decrypted_aggregated, DecryptMessage(dc->payload_in_transit));
-        // std::cout << "After DecryptMessage: " << decrypted_aggregated << std::endl;
+        LOGI << "After DecryptMessage: " << decrypted_aggregated << std::endl;
         // std::cout << std::endl;
         dc->payload_l = deserialize_payload_l(decrypted_aggregated);
         return true;
@@ -151,6 +155,13 @@ namespace asylo {
         dc->timestamp = payload_l->back().txn_timestamp;
         dc->msgType = payload_l->back().txn_msgType;
         dc->sender = enclave_id;
+        dc->retAddr = "";
+    }
+
+    // Overload when there is a return address
+    void PayloadListToCapsule(capsule_pdu *dc, const std::vector<kvs_payload> *payload_l, const int enclave_id, std::string &ret_addr) {
+        PayloadListToCapsule(dc, payload_l, enclave_id);
+        dc->retAddr = ret_addr;
     }
 
     void CapsuleToProto(const capsule_pdu *dc, hello_world::CapsulePDU *dcProto){
@@ -165,6 +176,8 @@ namespace asylo {
         dcProto->set_timestamp(dc->timestamp);
         dcProto->set_msgtype(dc->msgType);
 
+        dcProto->set_retaddr(dc->retAddr);
+
     }
 
     void CapsuleFromProto(capsule_pdu *dc, const hello_world::CapsulePDU *dcProto) {
@@ -178,6 +191,8 @@ namespace asylo {
 
         dc->timestamp = dcProto->timestamp();
         dc->msgType = dcProto->msgtype();
+
+        dc->retAddr = dcProto->retaddr();
     }
 
     void CapsuleToCapsule(capsule_pdu *dc_new, const capsule_pdu *dc) {
@@ -195,7 +210,7 @@ namespace asylo {
     }
 
     void dumpProtoCapsule(const hello_world::CapsulePDU *dcProto){
-        LOGI << "Sender: "<< dcProto->sender() << ", payload_in_transit: " << dcProto->payload_in_transit() << ", Timestamp: " << (int64_t) dcProto->timestamp()
+        std::cout << "Sender: "<< dcProto->sender() << ", payload_in_transit: " << dcProto->payload_in_transit() << ", Timestamp: " << (int64_t) dcProto->timestamp()
                   << ", hash: " << dcProto->hash() << ", prevHash: " << dcProto->prevhash()
                   << ", signature: " << dcProto->signature() << " message type: " << dcProto->msgtype();
     }

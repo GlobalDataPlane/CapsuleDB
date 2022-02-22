@@ -1,16 +1,7 @@
-workspace(name = "capsuleDB_engine1")
+workspace(name = "asylo_examples")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository", "new_git_repository")
-
-git_repository(
-    name = "com_github_nelhage_rules_boost",
-    commit = "fce83babe3f6287bccb45d2df013a309fa3194b8",
-    remote = "https://github.com/nelhage/rules_boost",
-    shallow_since = "1591047380 -0700",
-)
-load("@com_github_nelhage_rules_boost//:boost/boost.bzl", "boost_deps")
-boost_deps()
 
 # Download and use the Asylo SDK.
 
@@ -37,19 +28,38 @@ http_archive(
 
 load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")
 
-http_archive(
-    name = "libccd",
-    build_file = "//src:BUILD.libccd",
-    strip_prefix = "libccd-2.1",
-    urls = [
-        "https://github.com/danfis/libccd/archive/refs/tags/v2.1.tar.gz",
-    ],
-)
+
+
+# http_archive(
+#     name = "assimp",
+#     build_file = "//src:BUILD.assimp",
+#     # sha256 = "60080d8ab4daaab309f65b3cffd99f19eb1af8d05623fff469b9b652818e286e",
+#     strip_prefix = "assimp-4.0.1",
+#     urls = ["https://github.com/assimp/assimp/archive/v4.0.1.tar.gz"],
+# )
+
+#fcl 
+# http_archive(
+#     name = "fcl",
+#     strip_prefix = "fcl-0.6.1",
+#     sha256 = "c8a68de8d35a4a5cd563411e7577c0dc2c626aba1eef288cb1ca88561f8d8019",
+#     urls = [
+#         "https://github.com/flexible-collision-library/fcl/archive/refs/tags/v0.6.1.tar.gz",
+#     ],
+#     build_file = "//src:BUILD.fcl",
+# )
 
 http_archive(
     name = "boringssl",
     strip_prefix = "boringssl-16100fd5073b3986ca03efa6bbb501c2e061e7e3",
     urls = ["https://github.com/google/boringssl/archive/16100fd5073b3986ca03efa6bbb501c2e061e7e3.zip"],
+)
+
+new_git_repository(
+    name = "bp32",
+    remote = "https://github.com/CodeShark/CoinClasses.git",
+    commit = "82f29c2a45a618702fc559615ce694b6bd9ebb46",
+    build_file = "//src:BUILD.bp32",
 )
 
 git_repository(
@@ -88,7 +98,21 @@ load("@com_github_grpc_grpc//bazel:grpc_extra_deps.bzl", "grpc_extra_deps")
 
 grpc_extra_deps()
 
+local_repository(
+  name = "zmq",
+  path = "third_party/zmq",
+)
+
 http_archive(
   name = "com_google_absl",
   urls = ["https://github.com/abseil/abseil-cpp/archive/refs/tags/20200923.3.zip"],
 )
+
+git_repository(
+    name = "com_github_nelhage_rules_boost",
+    commit = "fce83babe3f6287bccb45d2df013a309fa3194b8",
+    remote = "https://github.com/nelhage/rules_boost",
+    shallow_since = "1591047380 -0700",
+)
+load("@com_github_nelhage_rules_boost//:boost/boost.bzl", "boost_deps")
+boost_deps()
