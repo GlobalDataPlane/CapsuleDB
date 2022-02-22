@@ -1,14 +1,6 @@
 /*
  * This file manages the database as well as read/write requests.  
  *
- * Commands:
- * MY_PROJECT=~/Documents/Research/paranoid-sgx
- * docker run -it --rm \
-   -v bazel-cache:/root/.cache/bazel \
-    -v "${MY_PROJECT}":/opt/my-project \
-    -w /opt/my-project \
-    keplerc/paranoid-asylo:latest 
- * bazel run //src:capsuleDB
  */
 
 #include <iostream>
