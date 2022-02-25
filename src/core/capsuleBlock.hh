@@ -6,7 +6,7 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
-#include "../kvs_include/capsule.h"
+#include "src/shared/capsule.h"
 
 typedef struct {
     std::string hash;

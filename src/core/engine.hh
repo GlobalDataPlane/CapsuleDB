@@ -11,7 +11,7 @@
 #include "memtable.hpp"
 #include "absl/strings/string_view.h"
 #include "index.hh"
-#include "../kvs_include/capsule.h"
+#include "src/shared/capsule.h"
 //#include "../benchmark.h"
 
 // using namespace asylo;
@@ -42,7 +42,7 @@ class CapsuleDB {
         
         
         //M_BENCHMARK_HERE
-	#include "../benchmark.h"
+	#include "src/shared/benchmark.h"
         void benchmark_put(std::string key, std::string value)
         {
             test_map.insert({key, value});

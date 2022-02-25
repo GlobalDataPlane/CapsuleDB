@@ -1,8 +1,6 @@
 #include <iostream>
 #include "memtable.hpp"
 #include "asylo/util/logging.h"
-#include "../common.h"
-#include "../kvs_include/capsule.h"
 #include "capsuleBlock.hh"
 #include "index.hh"
 #include "level.hh"

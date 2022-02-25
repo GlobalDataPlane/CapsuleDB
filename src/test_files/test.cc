@@ -1,7 +1,7 @@
 #include <string>
 #include <iostream>
 
-#include "../core/engine.hh"
+#include "src/core/engine.hh"
 
 int main()
 {

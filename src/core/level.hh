@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-#include "../bloom/bloom_filter.hpp"
+#include "src/bloom/bloom_filter.hpp"
 #include "capsuleBlock.hh"
 
 class Level {  
