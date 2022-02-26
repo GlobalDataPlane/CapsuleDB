@@ -24,6 +24,7 @@
 #ifndef __COMMON_H
 #define __COMMON_H
 
+#include <cstdint>
 
 //#define NET_WORKER_IP "128.32.37.69"
 //#define NET_SEED_ROUTER_IP "128.32.37.46"

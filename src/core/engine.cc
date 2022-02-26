@@ -3,12 +3,8 @@
  *
  */
 
-#include <iostream>
-#include <string>
-#include "memtable.hpp"
-#include "../common.h"
+#include "src/shared/common.h"
 #include "engine.hh"
-#include "../kvs_include/capsule.h"
 
 // using namespace asylo;
 

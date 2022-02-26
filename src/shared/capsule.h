@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-#include "../common.h"
+#include "common.h"
 
 typedef struct {
     std::string key;

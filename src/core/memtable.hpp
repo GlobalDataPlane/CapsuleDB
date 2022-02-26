@@ -1,12 +1,12 @@
 #ifndef _MEMTBL_H
 #define _MEMTBL_H
 
-#include "absl/container/flat_hash_map.h"
-#include "../common.h"
-#include "../kvs_include/capsule.h"
 #include <mutex>
-#include "index.hh"
 #include <map>
+#include "absl/container/flat_hash_map.h"
+#include "src/shared/common.h"
+#include "src/shared/capsule.h"
+#include "index.hh"
 //#include "../sgx_spinlock.h"
 
 class Memtable
