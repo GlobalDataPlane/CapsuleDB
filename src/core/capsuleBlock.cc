@@ -2,11 +2,8 @@
  * This file defines a block of key-value pairs which is stored in a DataCapsule.  
  */
 
-#include <string>
-#include <vector>
 #include <iostream>
 #include "capsuleBlock.hh"
-#include "../kvs_include/capsule.h"
 #include "fakeCapsule.hh"
 
 CapsuleBlock::CapsuleBlock() {
