@@ -74,3 +74,13 @@ There is lots to do on CapsuleDB!  Here is a short list of things that still nee
 - [ ] Update README to include how to run networking test
 - [ ] Remove CapsuleDB implementation currently in PSL and convert to either Git submodule or use a Bazel load targeting this repo / version (hooray for modularity! :tada:)
 - [ ] Update README with description of how CapsuleDB actually works under the hood
+
+## Contributors
+
+Lead: William Mullen
+
+Contributors:
+- Nivedha Krishnakumar
+- Brian Wu
+- Willis Wang
+- Ryan Teoh
