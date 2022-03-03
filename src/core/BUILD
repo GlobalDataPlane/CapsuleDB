@@ -132,3 +132,14 @@ cc_library(
         "@com_google_absl//absl/strings",
     ],
 )
+
+proto_library(
+    name="capsuleBlock_proto",
+    srcs=["capsuleBlock.proto"],
+    deps=["@com_google_asylo//asylo:enclave_proto"],
+)
+
+cc_proto_library(
+    name="capsuleBlock_cc_proto",
+    deps=[":capsuleBlock_proto"],
+)
