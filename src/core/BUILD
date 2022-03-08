@@ -41,7 +41,7 @@ cc_library(
         "@boost//:archive",
         "@boost//:serialization",
         ":fakeCapsule",
-        "//src/shared:capsule"
+        "//src/shared:capsule",
     ],
 )
 
@@ -62,6 +62,7 @@ cc_library(
         "@boost//:archive",
         "@boost//:serialization",
         "@com_github_grpc_grpc//:grpc++",
+        ":capsuleBlock_cc_proto",
     ],
 )
 
