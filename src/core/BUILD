@@ -14,6 +14,30 @@ package(
     default_visibility = ["//visibility:public"],
 )
 
+# Protobuf targets
+proto_library(
+    name="kvs_payload_proto",
+    srcs=["kvs_payload.proto"],
+)
+
+cc_proto_library(
+    name="kvs_payload_cc_proto",
+    deps=[":kvs_payload_proto"],
+)
+
+proto_library(
+    name="capsuleBlock_proto",
+    srcs=[
+        "capsuleBlock.proto",
+        ":kvs_payload.proto"
+    ],
+)
+
+cc_proto_library(
+    name="capsuleBlock_cc_proto",
+    deps=[":capsuleBlock_proto"],
+)
+
 # CapsuleDB targets
 cc_library(
     name = "capsuleBlock",
@@ -121,25 +145,3 @@ cc_library(
     ],
 )
 
-proto_library(
-    name="kvs_payload_proto",
-    srcs=["kvs_payload.proto"],
-)
-
-cc_proto_library(
-    name="kvs_payload_cc_proto",
-    deps=[":kvs_payload_proto"],
-)
-
-proto_library(
-    name="capsuleBlock_proto",
-    srcs=[
-        "capsuleBlock.proto",
-        ":kvs_payload.proto"
-    ],
-)
-
-cc_proto_library(
-    name="capsuleBlock_cc_proto",
-    deps=[":capsuleBlock_proto"],
-)

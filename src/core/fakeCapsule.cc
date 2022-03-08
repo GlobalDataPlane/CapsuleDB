@@ -33,12 +33,12 @@ void sha256_string(const char *string, char outputBuffer[65])
 std::string putCapsuleBlock(CapsuleBlock inputBlock)
 {
     // Serialize Block
-    serialized::CapsuleBlock protobufBlock;
+    capsuleDBSerialization::CapsuleBlock protobufBlock;
     protobufBlock.set_level(inputBlock.getLevel());
     protobufBlock.set_startkey(inputBlock.getMinKey());
     protobufBlock.set_endkey(inputBlock.getMaxKey());
     for (auto it = inputBlock.getKVPairs().begin(); it != inputBlock.getKVPairs().end(); it++) {
-        serialized::CapsuleBlock::kvs_payload* kvPair_proto = protobufBlock.add_kvpairs();
+        capsuleDBSerialization::CapsuleBlock::kvs_payload* kvPair_proto = protobufBlock.add_kvpairs();
         kvPair_proto->set_key(it->key);
         kvPair_proto->set_value(it->value);
         kvPair_proto->set_txn_timestamp(it->txn_timestamp);
@@ -70,7 +70,7 @@ std::string putCapsuleBlock(CapsuleBlock inputBlock)
 
 CapsuleBlock getCapsuleBlock(std::string inputHash)
 {
-    serialized::CapsuleBlock recoveredBlock;
+    capsuleDBSerialization::CapsuleBlock recoveredBlock;
     // Retrieve and deserialize block
     std::ifstream storedBlock(inputHash);
     if (!recoveredBlock.ParseFromIstream(&storedBlock)) {
@@ -101,7 +101,7 @@ CapsuleBlock getCapsuleBlock(std::string inputHash)
     actualBlock.setMinKey(recoveredBlock.startkey());
     actualBlock.setMaxKey(recoveredBlock.endkey());
     for (int i = 0; i <  recoveredBlock.kvpairs_size(); i++) {
-      const serialized::CapsuleBlock::kvs_payload& kvPair_proto =
+      const capsuleDBSerialization::CapsuleBlock::kvs_payload& kvPair_proto =
           recoveredBlock.kvpairs(i);
       kvs_payload kvPair = {kvPair_proto.key(), kvPair_proto.value(),
                             kvPair_proto.txn_timestamp(),
