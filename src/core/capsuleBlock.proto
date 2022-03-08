@@ -1,18 +1,13 @@
 syntax = "proto2";
 
-package serialized;
+package capsuleDBSerialization;
+
+import "src/core/kvs_payload.proto";
 
 message CapsuleBlock{
   optional int32 level = 1;
   optional string startKey = 2;
   optional string endKey = 3;
-
-  message kvs_payload{
-    optional string key = 1;
-    optional string value = 2;
-    optional int64 txn_timestamp = 3;
-    optional string txn_msgType = 4;
-  }
 
   repeated kvs_payload kvPairs = 4;
 }

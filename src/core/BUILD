@@ -1,18 +1,5 @@
 # Core CapsuleDB Implementation Build file
 
-# Commands:
-
-# MY_PROJECT=~/Documents/Research/paranoid-sgx
-
-# docker run -it --rm \
-#    -v bazel-cache:/root/.cache/bazel \
-#     -v "${MY_PROJECT}":/opt/my-project \
-#     -w /opt/my-project \
-#     keplerc/paranoid-asylo:latest 
-
-# bazel run //src:capsuleDBTest
-
-
 load("@linux_sgx//:sgx_sdk.bzl", "sgx")
 load("@com_github_grpc_grpc//bazel:cc_grpc_library.bzl", "cc_grpc_library")
 load("@rules_cc//cc:defs.bzl", "cc_proto_library")
@@ -135,9 +122,21 @@ cc_library(
 )
 
 proto_library(
+    name="kvs_payload_proto",
+    srcs=["kvs_payload.proto"],
+)
+
+cc_proto_library(
+    name="kvs_payload_cc_proto",
+    deps=[":kvs_payload_proto"],
+)
+
+proto_library(
     name="capsuleBlock_proto",
-    srcs=["capsuleBlock.proto"],
-    deps=["@com_google_asylo//asylo:enclave_proto"],
+    srcs=[
+        "capsuleBlock.proto",
+        ":kvs_payload.proto"
+    ],
 )
 
 cc_proto_library(
