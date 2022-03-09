@@ -18,6 +18,7 @@ package(
 proto_library(
     name="kvs_payload_proto",
     srcs=["kvs_payload.proto"],
+    deps=["@com_google_asylo//asylo:enclave_proto"],
 )
 
 cc_proto_library(
@@ -31,6 +32,7 @@ proto_library(
         "capsuleBlock.proto",
         ":kvs_payload.proto"
     ],
+    deps=["@com_google_asylo//asylo:enclave_proto"],
 )
 
 cc_proto_library(
@@ -69,7 +71,7 @@ cc_library(
         "//src/shared:common",
         "//src/shared:benchmark",
         "//src/shared:capsule",
-        "//src/shared:crypto",
+        # "//src/shared:crypto",
         "@boost//:archive",
         "@boost//:serialization",
         "@com_github_grpc_grpc//:grpc++",
