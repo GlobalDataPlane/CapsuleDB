@@ -76,6 +76,8 @@ cc_library(
         "@boost//:serialization",
         "@com_github_grpc_grpc//:grpc++",
         ":capsuleBlock_cc_proto",
+        "@com_google_asylo//asylo/util:logging",
+        "@com_google_absl//absl/strings",
     ],
 )
 

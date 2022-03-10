@@ -8,6 +8,5 @@ message CapsuleBlock{
   optional int32 level = 1;
   optional string startKey = 2;
   optional string endKey = 3;
-
-  repeated kvs_payload kvPairs = 4;
+  optional string kvPairs = 4;
 }
