@@ -3,6 +3,7 @@
 
 #include <string>
 #include "capsuleBlock.hh"
+#include "src/shared/capsule.h"
 
 void sha256_string(const char *string, char outputBuffer[65]);
 
