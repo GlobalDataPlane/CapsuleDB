@@ -72,6 +72,7 @@ cc_library(
         "//src/shared:benchmark",
         "//src/shared:capsule",
         # "//src/shared:crypto",
+        "//src/uuid_v4:uuid",
         "@boost//:archive",
         "@boost//:serialization",
         "@com_github_grpc_grpc//:grpc++",

@@ -1,3 +1,6 @@
 [submodule "bloom"]
-	path = bloom
+	path = src/bloom
 	url = git@github.com:ArashPartow/bloom.git
+[submodule "uuid_v4"]
+	path = src/uuid_v4
+	url = git@github.com:crashoz/uuid_v4.git
