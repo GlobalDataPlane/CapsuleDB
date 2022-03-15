@@ -1,14 +1,20 @@
-#include <openssl/sha.h>
-#include <boost/archive/text_oarchive.hpp>
+#include "absl/strings/str_split.h"
+#include "asylo/util/logging.h"
 #include <boost/archive/text_iarchive.hpp>
-#include <sstream>
-#include <iostream>
+#include <boost/archive/text_oarchive.hpp>
 #include <fstream>
+#include <iostream>
+#include <openssl/sha.h>
+#include <sstream>
 #include <vector>
 #include "capsuleBlock.hh"
 #include "fakeCapsule.hh"
 #include "src/core/capsuleBlock.pb.h"
 #include "src/uuid_v4/uuid_v4.h"
+
+/* For serializing kvs_payloads */
+std::string delim_str = "@@@";
+char delim = ';';
 
 void sha256_string(const char *string, char outputBuffer[65])
 {
@@ -74,6 +80,53 @@ CapsuleBlock getCapsuleBlockBoost(std::string inputHash) {
     return recoveredBlock;
 }
 
+void KvToPayload(kvs_payload *payload, const std::string &key, const std::string &value, const int64_t timer,
+                const std::string &msgType) {
+    payload->key = key;
+    payload->value = value;
+    payload->txn_timestamp = timer;
+    payload->txn_msgType = msgType;
+}
+
+std::string serialize_payload_l(const std::vector<kvs_payload> &payload_l) {
+    std::string payload_l_s;
+    for (const kvs_payload &payload : payload_l) {
+        payload_l_s += std::to_string(payload.txn_timestamp) + delim_str +
+                    payload.txn_msgType + delim_str + payload.key + delim_str +
+                    payload.value + delim_str;
+    }
+    return payload_l_s;
+}
+
+std::vector<kvs_payload> deserialize_payload_l(const std::string &payload_l_s) {
+    std::vector<kvs_payload> payload_l;
+    std::stringstream ss(payload_l_s);
+    std::string txn_timestamp, txn_msgType, key, value;
+
+    std::vector<std::string> split = absl::StrSplit(payload_l_s, delim_str);
+
+    if ((split.size() - 1) % 4 != 0) {
+        LOG(ERROR) << "invalid payload size " << split.size();
+        for (int i = 0; i < split.size(); i += 1) {
+            LOG(ERROR) << i << " " << split[i];
+        }
+        return payload_l;
+    }
+
+    for (int i = 0; i < ((split.size() - 1) / 4) * 4; i += 4) {
+        kvs_payload payload;
+        txn_timestamp = split.at(i);
+        txn_msgType = split.at(i + 1);
+        key = split.at(i + 2);
+        value = split.at(i + 3);
+
+        KvToPayload(&payload, key, value, std::stoi(txn_timestamp), txn_msgType);
+        payload_l.push_back(payload);
+    }
+
+    return payload_l;
+}
+
 /*
     Input = CapsuleBlock
     Value = serialize(CapsuleBlock)
@@ -94,24 +147,15 @@ std::string putCapsuleBlock(CapsuleBlock inputBlock)
     UUIDv4::UUID uuid = uuidGenerator.getUUID();
 
     protobufBlock.set_uuid(uuid.bytes());
-    
-    std::vector<kvs_payload> pairs = inputBlock.getKVPairs();
-    for (int i = 0; i < pairs.size(); i++) {
-        capsuleDBSerialization::kvs_payload* kvPair_proto = protobufBlock.add_kvpairs();
-        kvPair_proto->set_key(pairs[i].key);
-        kvPair_proto->set_value(pairs[i].value);
-        kvPair_proto->set_txn_timestamp(pairs[i].txn_timestamp);
-        kvPair_proto->set_txn_msgtype(pairs[i].txn_msgType);
-    }
+      
+    std::cout << "Test 3" << std::endl;
 
-    // std::cout << "Level: " << protobufBlock.level() << std::endl;
-    // std::cout << "Start key: " << protobufBlock.startkey() << std::endl;
-    // std::cout << "End key: " << protobufBlock.endkey() << std::endl;
-    // for (int i = 0; i < pairs.size(); i++) {
-    //     capsuleDBSerialization::kvs_payload kvPair_proto = protobufBlock.kvpairs(i);
-    //     std::cout << "Key: " << kvPair_proto.key() << " Value: " << kvPair_proto.value() << " Timestamp: " << kvPair_proto.txn_timestamp() << " Msg: " << kvPair_proto.txn_msgtype() << std::endl;
-    // }
-    
+    std::vector<kvs_payload> pairs = inputBlock.getKVPairs();
+    std::string pairs_str = serialize_payload_l(pairs);
+    protobufBlock.set_kvpairs(pairs_str);
+
+
+    std::cout << "Test 4" << std::endl;
     std::string serializedBlock;
     if (!protobufBlock.SerializeToString(&serializedBlock)) {
         std::cerr << "Failed to serialize CapsuleBlock" << std::endl;
@@ -171,16 +215,9 @@ CapsuleBlock getCapsuleBlock(std::string inputHash)
     actualBlock.setMinKey(recoveredBlock.startkey());
     actualBlock.setMaxKey(recoveredBlock.endkey());
 
-    for (int i = 0; i <  recoveredBlock.kvpairs_size(); i++) {
-      const capsuleDBSerialization::kvs_payload& kvPair_proto = recoveredBlock.kvpairs(i);
-      kvs_payload kvPair = {kvPair_proto.key(), kvPair_proto.value(),
-                            kvPair_proto.txn_timestamp(),
-                            kvPair_proto.txn_msgtype()};
-      actualBlock.addKVPair(kvPair);
-
-        // std::cout << "Key from protobuf: " << kvPair_proto.key() << " Key from block: " << kvPair.key << std::endl;
-        // std::cout << "Value from protobuf: " << kvPair_proto.value() << " Value from block: " << kvPair.value << std::endl;
-        // std::cout << "Timestamp from protobuf: " << kvPair_proto.txn_timestamp() << " Timestamp from block: " << kvPair.txn_timestamp << std::endl;
+    std::vector<kvs_payload> kvPairs = deserialize_payload_l(recoveredBlock.kvpairs());
+    for (auto it = kvPairs.begin(); it != kvPairs.end(); it++) {
+        actualBlock.addKVPair(*it);
     }
 
     // google::protobuf::ShutdownProtobufLibrary();

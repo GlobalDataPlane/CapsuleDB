@@ -10,5 +10,5 @@ message CapsuleBlock{
   optional string endKey = 3;
   optional bytes uuid = 5;
 
-  repeated kvs_payload kvPairs = 4;
+  optional string kvPairs = 4;
 }
