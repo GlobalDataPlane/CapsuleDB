@@ -70,9 +70,6 @@ std::string putCapsuleBlock(CapsuleBlock inputBlock)
     // Hash bytestream
     char blockHash[65];
     sha256_string(serializedBlock.data(), blockHash);
-    std::cout << "Block with hash " << blockHash << " has min key " << inputBlock.getMinKey() << " and max key " << inputBlock.getMaxKey() << std::endl;
-    // std::cout << "This block has uuid " << bytes << std::endl;
-
 
     // Store serialized block in file
     std::ofstream storedBlockFile;
