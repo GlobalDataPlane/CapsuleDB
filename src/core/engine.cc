@@ -44,9 +44,9 @@ void CapsuleDB::put(const kvs_payload *payload)
     std::cout << "PUT key=" << payload->key << ", value=" << payload->value << "\n";
     if (!memtable.put(payload, &this->index))
     {
-        #ifdef DEBUG
+        // #ifdef DEBUG
         std::cout << "Failed to write key in the Database";
-        #endif
+        // #endif
     }
 }
 

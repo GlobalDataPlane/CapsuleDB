@@ -5,10 +5,10 @@ package capsuleDBSerialization;
 import "src/core/kvs_payload.proto";
 
 message CapsuleBlock{
-  optional int32 level = 1;
+  optional int64 level = 1;
   optional string startKey = 2;
   optional string endKey = 3;
-  optional bytes uuid = 5;
 
-  optional string kvPairs = 4;
+  repeated Kvs_payload kvpairs = 4;
+  optional int64 num_pairs = 5;
 }
