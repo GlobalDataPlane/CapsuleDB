@@ -53,7 +53,6 @@ class CapsuleDB {
             kvs.txn_timestamp = std::chrono::system_clock::to_time_t(
                            std::chrono::system_clock::now());
             put(&kvs);
-            get(key);
         }
         void benchmark_get(std::string key)
         {
@@ -79,23 +78,23 @@ class CapsuleDB {
             for (int i = 0; i < index.levels.size(); i++) {
                 std::cout << "Num blocks in level " << i << ": " << index.levels[i].recordHashes.size() << std::endl;
             }
-            // std::cout << "Stats for level " << index.levels[0].index << std::endl;
-            // std::cout << "First key l0: " << index.levels[0].recordHashes[0].minKey << "\n";
-            // std::cout << "Last key l0: " << index.levels[0].recordHashes[index.levels[0].recordHashes.size() - 1].maxKey << "\n";
-            // std::cout << "L0 max size: " << index.levels[0].maxSize << "\n";
-            // std::cout << "Num blocks in l0: " << index.levels[0].numBlocks << " and length of actual vector: " << index.levels[0].recordHashes.size() << std::endl;
-            // std::cout << "Stats for level " << index.levels[1].index << std::endl;
-            // std::cout << "First key l1: " << index.levels[1].recordHashes[0].minKey << "\n";
-            // std::cout << "Last key l1: " << index.levels[1].recordHashes[index.levels[1].recordHashes.size() - 1].maxKey << "\n";
-            // std::cout << "L1 max size: " << index.levels[1].maxSize << "\n";
-            // std::cout << "Num blocks in l1: " << index.levels[1].numBlocks << " and length of actual vector: " << index.levels[1].recordHashes.size() << std::endl;
-            // // std::cout << "First key l2: " << index.levels[2].recordHashes[0].minKey << "\n";
-            // // std::cout << "Last key l2: " << index.levels[2].recordHashes[index.levels[1].recordHashes.size() - 1].maxKey << "\n";
-            // // std::cout << "L2 max size: " << index.levels[2].maxSize << "\n";
-            // // std::cout << "Key not found: " << failed_keys[1] << "\n";
-            // std::cout << "no.of.keys not found is:"<<test_count << "\n";
-            // std::cout << "no.of.keys found is:"<<num_found <<"\n";
-            // std::cout << "size of test_map: " <<test_map.size() <<"\n"; 
+            std::cout << "Stats for level " << index.levels[0].index << std::endl;
+            std::cout << "First key l0: " << index.levels[0].recordHashes[0].minKey << "\n";
+            std::cout << "Last key l0: " << index.levels[0].recordHashes[index.levels[0].recordHashes.size() - 1].maxKey << "\n";
+            std::cout << "L0 max size: " << index.levels[0].maxSize << "\n";
+            std::cout << "Num blocks in l0: " << index.levels[0].numBlocks << " and length of actual vector: " << index.levels[0].recordHashes.size() << std::endl;
+            std::cout << "Stats for level " << index.levels[1].index << std::endl;
+            std::cout << "First key l1: " << index.levels[1].recordHashes[0].minKey << "\n";
+            std::cout << "Last key l1: " << index.levels[1].recordHashes[index.levels[1].recordHashes.size() - 1].maxKey << "\n";
+            std::cout << "L1 max size: " << index.levels[1].maxSize << "\n";
+            std::cout << "Num blocks in l1: " << index.levels[1].numBlocks << " and length of actual vector: " << index.levels[1].recordHashes.size() << std::endl;
+            std::cout << "First key l2: " << index.levels[2].recordHashes[0].minKey << "\n";
+            std::cout << "Last key l2: " << index.levels[2].recordHashes[index.levels[1].recordHashes.size() - 1].maxKey << "\n";
+            std::cout << "L2 max size: " << index.levels[2].maxSize << "\n";
+            // std::cout << "Key not found: " << failed_keys[1] << "\n";
+            std::cout << "no.of.keys not found is:"<<test_count << "\n";
+            std::cout << "no.of.keys found is:"<<num_found <<"\n";
+            std::cout << "size of test_map: " <<test_map.size() <<"\n"; 
            for(int x=0; x <failed_keys.size();x++)
                 std::cout << failed_keys.at(x)<<" ";
         }

@@ -17,6 +17,7 @@
 /* For serializing kvs_payloads */
 std::string delim_str = "@@@";
 char delim = ';';
+int counter = 0;
 
 void sha256_string(const char *string, char outputBuffer[65])
 {
@@ -159,7 +160,8 @@ std::string putCapsuleBlock(CapsuleBlock inputBlock)
         kvs_payload_serialized->set_txn_msgtype(inputBlock.kvPairs[i].txn_msgType);
     }
 
-    protobufBlock.set_num_pairs(inputBlock.kvPairs.size());
+    protobufBlock.set_counter(counter);
+    counter++;
 
     std::string serializedBlock;
     bool success = protobufBlock.SerializeToString(&serializedBlock);
