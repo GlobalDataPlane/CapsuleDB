@@ -44,7 +44,7 @@ std::string putCapsuleBlock(CapsuleBlock inputBlock)
 {
     // Serialize Block
     capsuleDBSerialization::CapsuleBlock protobufBlock;
-    // TODO: Fix this
+    // TODO: Change this to something more robust than a counter
     protobufBlock.set_counter(counter);
     counter++;
     protobufBlock.set_level(inputBlock.getLevel());
