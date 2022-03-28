@@ -44,7 +44,7 @@ cc_unsigned_enclave(
     copts = ASYLO_DEFAULT_COPTS,
     deps = [
         ":demo_cc_proto",
-        "//src:capsuleEngine",
+        "//src/core:capsuleEngine",
         "@com_google_asylo//asylo:enclave_runtime",
         "@com_google_asylo//asylo/crypto:aead_cryptor",
         "@com_google_asylo//asylo/util:cleansing_types",

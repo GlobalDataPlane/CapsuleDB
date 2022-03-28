@@ -67,10 +67,21 @@ Since there are many of us working on CapsuleDB simultaneously, please make sure
 There is lots to do on CapsuleDB!  Here is a short list of things that still needs to be dealt with, in order of priority.
 
 - [x] Refactor entire codebase for better modularity and smaller BUILD files (hopefully this has partially fixed the ridiculous build times)
-- [ ] Change serialization away from Boost library
+- [x] Change serialization away from Boost library
+- [ ] Update serialization so it does not use a counter
 - [ ] Add enclave compatability with `handle()` method (see PSL codebase for example)
 - [ ] Update README to include how to run enclave tests
 - [ ] Update local networking implementation to match that of PSL
 - [ ] Update README to include how to run networking test
 - [ ] Remove CapsuleDB implementation currently in PSL and convert to either Git submodule or use a Bazel load targeting this repo / version (hooray for modularity! :tada:)
 - [ ] Update README with description of how CapsuleDB actually works under the hood
+
+## Contributors
+
+Lead: William Mullen
+
+Contributors:
+- Nivedha Krishnakumar
+- Brian Wu
+- Willis Wang
+- Ryan Teoh

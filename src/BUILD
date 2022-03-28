@@ -2,18 +2,6 @@
 
 # ONLY DO TESTING HERE, MAKE A SEPARATE BUILD FILE FOR PACKAGES
 
-# Commands:
-
-# MY_PROJECT=~/Documents/Research/paranoid-sgx
-
-# docker run -it --rm \
-#    -v bazel-cache:/root/.cache/bazel \
-#     -v "${MY_PROJECT}":/opt/my-project \
-#     -w /opt/my-project \
-#     keplerc/paranoid-asylo:latest 
-
-# bazel run //src:capsuleDBTest
-
 
 load("@linux_sgx//:sgx_sdk.bzl", "sgx")
 load("@com_github_grpc_grpc//bazel:cc_grpc_library.bzl", "cc_grpc_library")

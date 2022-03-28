@@ -53,20 +53,20 @@ bool Memtable::put(const kvs_payload *payload, CapsuleIndex* index)
         //the timestamp of this payload is earlier, skip the change
         if (payload->txn_timestamp <= prev_timestamp)
         {
-            #ifdef DEBUG
+            // #ifdef DEBUG
             std::cout << "[EARLIER DISCARDED] Timestamp of incoming payload key: " << payload->key
                  << ", timestamp: " << payload->txn_timestamp << " ealier than " << prev_timestamp;
-            #endif
+            // #endif
            lock->unlock();
            return false;
         }
         else
         {
             memtable[payload->key] = *payload;
-            #ifdef DEBUG
+            // #ifdef DEBUG
             std::cout << "[SAME PAYLOAD UPDATED] Timestamp of incoming payload {key=" << payload->key
                  << ", timestamp=" << payload->txn_timestamp << "} replaces previous timestamp=" << prev_timestamp << "\n";
-            #endif
+            // #endif
             lock->unlock();
             return true;
         }
