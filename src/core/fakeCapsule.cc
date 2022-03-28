@@ -1,11 +1,23 @@
+/* This file contains the disk / eventual DataCapsule interface for CapsuleDB */
+
+#include "absl/strings/str_split.h"
+#include "asylo/util/logging.h"
+#include <cmath>
+#include <exception>
 #include <fstream>
-#include <openssl/sha.h>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <sstream>
 #include <iostream>
+#include <iterator>
+#include <openssl/sha.h>
+#include <sstream>
+#include <stdexcept>
+#include <vector>
 #include "capsuleBlock.hh"
 #include "fakeCapsule.hh"
+#include "src/core/capsuleBlock.pb.h"
+#include "src/core/kvs_payload.pb.h"
+
+
+int counter = 0;
 
 void sha256_string(const char *string, char outputBuffer[65])
 {
@@ -19,61 +31,110 @@ void sha256_string(const char *string, char outputBuffer[65])
     {
         sprintf(outputBuffer + (i * 2), "%02x", hash[i]);
     }
-    outputBuffer[64] = 0;
+    outputBuffer[64] = '\0';
 }
 
 /*
-    Input = CapsuleBlock
-    Value = serialize(CapsuleBlock)
-    Key = hash(Value)
-        Store Value into a file named Key
-    Output = Key
+    This function takes in a CapsuleBlock and writes it to disk.  
+    
+    Input: CapsuleBlock
+    Output: std::string which is a SHA256 hash of the block and is the name of the file on disc
 */
-std::string putCapsuleBlock(CapsuleBlock inputBlock) {
+std::string putCapsuleBlock(CapsuleBlock inputBlock)
+{
     // Serialize Block
-    std::stringstream toBeHashed;
-    boost::archive::text_oarchive oa1(toBeHashed);
-    oa1 << inputBlock;
-    std::string s = toBeHashed.str();
-    // std::cout << "putCapsuleBlock: toBeHashed=" << s << "\n";
+    capsuleDBSerialization::CapsuleBlock protobufBlock;
+    // TODO: Change this to something more robust than a counter
+    protobufBlock.set_counter(counter);
+    counter++;
+    protobufBlock.set_level(inputBlock.getLevel());
+    protobufBlock.set_startkey(inputBlock.getMinKey());
+    protobufBlock.set_endkey(inputBlock.getMaxKey());
+
+    for (int i = 0; i < inputBlock.kvPairs.size(); i++) {
+        capsuleDBSerialization::Kvs_payload* kvs_payload_serialized = protobufBlock.add_kvpairs();
+        kvs_payload_serialized->set_key(inputBlock.kvPairs[i].key);
+        kvs_payload_serialized->set_value(inputBlock.kvPairs[i].value);
+        kvs_payload_serialized->set_txn_timestamp(inputBlock.kvPairs[i].txn_timestamp);
+        kvs_payload_serialized->set_txn_msgtype(inputBlock.kvPairs[i].txn_msgType);
+    }
+
+    // Serialize
+    std::string serializedBlock;
+    bool success = protobufBlock.SerializeToString(&serializedBlock);
+    if (!success) {
+        std::cerr << "Failed to put CapsuleBlock with min key " << inputBlock.getMinKey() << " and max key " << inputBlock.getMaxKey() << std::endl;
+        throw std::logic_error("String serialization failure.\n");
+    }
 
     // Hash bytestream
     char blockHash[65];
-    sha256_string(s.data(), blockHash);
-    // std::cout << "putCapsuleBlock: blockHash=" << blockHash << "\n";
+    sha256_string(serializedBlock.data(), blockHash);
 
-    // Serialize and store block
-    std::ofstream storedBlockFile(blockHash);
-    boost::archive::text_oarchive oa2(storedBlockFile);
-    oa2 << inputBlock;
+    // Store serialized block in file
+    std::ofstream storedBlockFile;
+    storedBlockFile.open(blockHash);
+    success = protobufBlock.SerializeToOstream(&storedBlockFile);
+    if (!success) {
+        throw std::logic_error("Ostream serialization failure.\n");
+    }
+    storedBlockFile.close();
 
-    // Return Hash
+    // return Hash
     return blockHash;
 }
 
-CapsuleBlock getCapsuleBlock(std::string inputHash) {
-    CapsuleBlock recoveredBlock;
-    // Retrieve and deserialize block
-    std::ifstream storedBlock(inputHash);
-    boost::archive::text_iarchive ia(storedBlock);
-    ia >> recoveredBlock;
+/* 
+    This function retrieves a CapsuleBlock stored on disk.
 
-    // * Re-serialize and check hash *
-    // ** Serialize Block **
-    std::stringstream toBeHashed;
-    boost::archive::text_oarchive oa1(toBeHashed);
-    oa1 << recoveredBlock;
-    std::string s = toBeHashed.str();
-    // std::cout << "getCapsuleBlock: toBeHashed=" << s << "\n";
-    // ** Hash bytestream ** 
-    char blockHash[65];
-    sha256_string(s.data(), blockHash);
-    // std::cout << "getCapsuleBlock: blockHash=" << blockHash << "\n";
-    // ** Verify hash **
-    if (blockHash != inputHash) {
-        std::cout << "inputHash=" << inputHash << "\n";
-        throw std::invalid_argument("inputHash not found");
+    Input: String that is the hash (and file name) of the requested CapsuleBlock
+    Output: The requested CapsuleBlock
+*/
+CapsuleBlock getCapsuleBlock(std::string inputHash)
+{
+    capsuleDBSerialization::CapsuleBlock recoveredBlock;
+
+    // Retrieve and deserialize block
+    std::ifstream storedBlock;
+    storedBlock.open(inputHash);
+    bool success = recoveredBlock.ParseFromIstream(&storedBlock);
+    if (!success) {
+        throw std::logic_error("Failed to deserialize retreived block.\n");
     }
+    storedBlock.close();
+
+
+    // Re-serialize and check hash
+    std::string serializedBlock;
+    success = recoveredBlock.SerializeToString(&serializedBlock);
+    if (!success) {
+        std::cerr << "Failed to string serialize retrieved CapsuleBlock." << std::endl;
+        throw std::logic_error("SerializeToString failure in getCapsuleBlock.\n");
+    }
+
+    // Hash bytestream
+    char blockHash[65];
+    sha256_string(serializedBlock.data(), blockHash);
+
+    // Verify hash
+    if (blockHash != inputHash) {
+        throw std::invalid_argument("Hash mismatch on retrieval, possible tampering detected.\n");
+    }
+
+    // Convert recoveredBlock(proto) to actual CapsuleBlock
+    CapsuleBlock actualBlock(recoveredBlock.level());
+    actualBlock.setMinKey(recoveredBlock.startkey());
+    actualBlock.setMaxKey(recoveredBlock.endkey());
+
+    for (int i = 0; i < recoveredBlock.kvpairs_size(); i++) {
+        kvs_payload retrieved_payload;
+        retrieved_payload.key = recoveredBlock.kvpairs(i).key();
+        retrieved_payload.value = recoveredBlock.kvpairs(i).value();
+        retrieved_payload.txn_timestamp = recoveredBlock.kvpairs(i).txn_timestamp();
+        retrieved_payload.txn_msgType = recoveredBlock.kvpairs(i).txn_msgtype();
+        actualBlock.addKVPair(retrieved_payload);
+    }
+
     // Return to user
-    return recoveredBlock;
+    return actualBlock;
 }

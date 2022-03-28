@@ -41,7 +41,7 @@ std::string CapsuleIndex::getBlock(int level, std::string key) {
     #endif
 
     if (level < 0 || level >= numLevels) {
-        return "";
+        return "Bad level";
     }
     Level curr_level = levels[level];
     // if (curr_level.levelFilter.contains(key)) {
