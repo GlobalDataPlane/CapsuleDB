@@ -32,7 +32,10 @@
 #include "asylo/util/statusor.h"
 
 #include "../core/engine.hh"
-#include "../kvs_include/capsule.h"
+#include "src/shared/capsule.h"
+#include "src/enclave/capsuleDBRequest.pb.h"
+
+CapsuleDB * db;
 
 namespace asylo {
 namespace {
@@ -111,20 +114,19 @@ class EnclaveDemo : public TrustedApplication {
   EnclaveDemo() = default;
 
   Status Run(const EnclaveInput &input, EnclaveOutput *output) {
-    std::string user_message = GetEnclaveUserMessage(input);
-
-    std::string result;
-    ASYLO_ASSIGN_OR_RETURN(result, EncryptMessage(user_message));
-
-    CapsuleDB * db = spawnDB(50);
-    kvs_payload payload;
-    payload.key = "TestKey";
-    payload.value = "Value";
-    db->put(&payload);
-    kvs_payload returnedVal = db->get("TestKey");
-
-    std::cout << "Encrypted message:" << std::endl << result << std::endl;
-    std::cout << "Returned Val: " << returnedVal.value << "\n";
+    
+    if (input.GetExtension(capsuleDBProtos::quickstart_input).requestedkey() == "") {
+      kvs_payload payload;
+      payload.key = input.GetExtension(capsuleDBProtos::quickstart_input).payload().key();
+      payload.value = input.GetExtension(capsuleDBProtos::quickstart_input).payload().value();
+      payload.txn_timestamp = input.GetExtension(capsuleDBProtos::quickstart_input).payload().txn_timestamp();
+      db->put(&payload);
+    } else {
+      std::string requestedKey = input.GetExtension(capsuleDBProtos::quickstart_input).requestedkey();
+      std::cout << "Requested Key: " << requestedKey << std::endl;
+      kvs_payload retrievedPayload = db->get(requestedKey);
+      std::cout << "Retrived val: " << retrievedPayload.value << std::endl;
+    }
     return absl::OkStatus();
   }
 

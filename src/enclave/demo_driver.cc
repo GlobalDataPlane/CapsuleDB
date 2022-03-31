@@ -18,11 +18,12 @@
 
 #include <iostream>
 #include <string>
+#include <chrono>
 
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
 #include "asylo/client.h"
-#include "src/enclave/demo.pb.h"
+#include "src/enclave/capsuleDBRequest.pb.h"
 #include "asylo/util/logging.h"
 #include "asylo/platform/primitives/sgx/loader.pb.h"
 
@@ -32,16 +33,20 @@ ABSL_FLAG(std::string, message, "", "Message to encrypt");
 
 // Populates |enclave_input|->value() with |user_message|.
 void SetEnclaveUserMessage(asylo::EnclaveInput *enclave_input,
-                           const std::string &user_message) {
-  guide::asylo::Demo *user_input =
-      enclave_input->MutableExtension(guide::asylo::quickstart_input);
-  user_input->set_value(user_message);
-}
-
-// Retrieves encrypted message from |output|. Intended to be used by the reader
-// for completing the exercise.
-const std::string GetEnclaveOutputMessage(const asylo::EnclaveOutput &output) {
-  return output.GetExtension(guide::asylo::quickstart_output).value();
+                           bool get) {
+  capsuleDBProtos::DBRequest *user_input =
+      enclave_input->MutableExtension(capsuleDBProtos::quickstart_input);
+  user_input->set_requestingenclaveid(25);
+  if (get) {
+    user_input->set_requestedkey("TestKey");
+  } else {
+    capsuleDBProtos::Kvs_payload* kvs_payload_serialized = user_input->mutable_payload();
+    kvs_payload_serialized->set_key("TestKey");
+    kvs_payload_serialized->set_value("TestVal");
+    kvs_payload_serialized->set_txn_timestamp(std::chrono::system_clock::to_time_t(
+                            std::chrono::system_clock::now()));
+    kvs_payload_serialized->set_txn_msgtype("PUT");
+  }
 }
 
 int main(int argc, char *argv[]) {
@@ -82,11 +87,15 @@ int main(int argc, char *argv[]) {
   // Prepare |input| with |message| and create |output| to retrieve response
   // from enclave.
   asylo::EnclaveInput input;
-  SetEnclaveUserMessage(&input, message);
+  SetEnclaveUserMessage(&input, false);
   asylo::EnclaveOutput output;
 
   // Get |EnclaveClient| for loaded enclave and execute |EnterAndRun|.
   asylo::EnclaveClient *const client = manager->GetClient(kEnclaveName);
+  status = client->EnterAndRun(input, &output);
+  LOG_IF(QFATAL, !status.ok()) << "EnterAndRun failed with: " << status;
+
+  SetEnclaveUserMessage(&input, true);
   status = client->EnterAndRun(input, &output);
   LOG_IF(QFATAL, !status.ok()) << "EnterAndRun failed with: " << status;
 

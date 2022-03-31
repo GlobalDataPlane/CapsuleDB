@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-package capsuleDBSerialization;
+package capsuleDBProtos;
 
 message Kvs_payload{
     optional string key = 1;

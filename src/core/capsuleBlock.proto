@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-package capsuleDBSerialization;
+package capsuleDBProtos;
 
 import "src/core/kvs_payload.proto";
 

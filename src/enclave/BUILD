@@ -26,6 +26,21 @@ package(
     default_visibility = ["//visibility:public"],
 )
 
+# CapsuleDB Targets
+proto_library(
+    name = "request_proto",
+    srcs = ["capsuleDBRequest.proto"],
+    deps = [
+        "//src/core:kvs_payload_proto",
+        "@com_google_asylo//asylo:enclave_proto",
+    ],
+)
+
+cc_proto_library(
+    name = "request_cc_proto",
+    deps = [":request_proto"]
+)
+
 # Example and exercise for using Asylo toolkits.
 proto_library(
     name = "demo_proto",
@@ -45,6 +60,8 @@ cc_unsigned_enclave(
     deps = [
         ":demo_cc_proto",
         "//src/core:capsuleEngine",
+        "//src/shared:capsule",
+        ":request_cc_proto",
         "@com_google_asylo//asylo:enclave_runtime",
         "@com_google_asylo//asylo/crypto:aead_cryptor",
         "@com_google_asylo//asylo/util:cleansing_types",
@@ -67,7 +84,9 @@ enclave_loader(
     enclaves = {"enclave": ":demo_enclave.so"},
     loader_args = ["--enclave_path='{enclave}'"],
     deps = [
+        "//src/shared:capsule",
         ":demo_cc_proto",
+        ":request_cc_proto",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
         "@com_google_asylo//asylo:enclave_cc_proto",

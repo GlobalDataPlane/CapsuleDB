@@ -1,0 +1,24 @@
+syntax = "proto2";
+
+package capsuleDBProtos;
+
+import "src/core/kvs_payload.proto";
+import "asylo/enclave.proto";
+
+message DBRequest { 
+    optional int32 requestingEnclaveID = 1;
+    optional string requestedkey = 2;
+    optional Kvs_payload payload = 3;
+}  
+
+// The EnclaveInput message that is passed to the enclave can be extended with
+// a Demo message to communicate a value our enclave knows to expect.
+extend .asylo.EnclaveInput {
+    optional DBRequest quickstart_input = 9001;
+  }
+  
+  // The EnclaveOutput message that is passed out of the enclave can be extended
+  // with a Demo message to communicate a value our driver knows to expect.
+  extend .asylo.EnclaveOutput {
+    optional DBRequest quickstart_output = 9001;
+  }
