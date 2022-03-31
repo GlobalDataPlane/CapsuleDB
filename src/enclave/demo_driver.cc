@@ -98,6 +98,7 @@ int main(int argc, char *argv[]) {
   SetEnclaveUserMessage(&input, true);
   status = client->EnterAndRun(input, &output);
   LOG_IF(QFATAL, !status.ok()) << "EnterAndRun failed with: " << status;
+  std::cout << "Retrieved Value: " << output.GetExtension(capsuleDBProtos::quickstart_output).payload().value() << std::endl;
 
   // Part 3: Finalization
 

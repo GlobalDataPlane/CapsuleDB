@@ -41,7 +41,6 @@ kvs_payload Memtable::get(const std::string &key)
  */
 bool Memtable::put(const kvs_payload *payload, CapsuleIndex* index)
 {
-    // TODO: Causes a segfault
     auto prev_iter_lock = locklst.find(payload->key);
     if (prev_iter_lock != locklst.end())
     {

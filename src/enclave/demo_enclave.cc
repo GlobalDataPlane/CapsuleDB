@@ -35,7 +35,7 @@
 #include "src/shared/capsule.h"
 #include "src/enclave/capsuleDBRequest.pb.h"
 
-CapsuleDB * db;
+CapsuleDB * db = spawnDB(50);
 
 namespace asylo {
 namespace {
@@ -123,9 +123,13 @@ class EnclaveDemo : public TrustedApplication {
       db->put(&payload);
     } else {
       std::string requestedKey = input.GetExtension(capsuleDBProtos::quickstart_input).requestedkey();
-      std::cout << "Requested Key: " << requestedKey << std::endl;
       kvs_payload retrievedPayload = db->get(requestedKey);
-      std::cout << "Retrived val: " << retrievedPayload.value << std::endl;
+      capsuleDBProtos::DBRequest *output_request = output->MutableExtension(capsuleDBProtos::quickstart_output);
+      capsuleDBProtos::Kvs_payload* kvs_payload_serialized = output_request->mutable_payload();
+      kvs_payload_serialized->set_key(retrievedPayload.key);
+      kvs_payload_serialized->set_value(retrievedPayload.value);
+      kvs_payload_serialized->set_txn_timestamp(retrievedPayload.txn_timestamp);
+      // std::cout << "Retrived val: " << retrievedPayload.value << std::endl;
     }
     return absl::OkStatus();
   }
