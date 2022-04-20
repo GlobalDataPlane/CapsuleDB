@@ -1,0 +1,9 @@
+syntax = "proto2";
+
+package capsuleDBProtos;
+
+import "asylo/enclave.proto";
+
+extend asylo.EnclaveConfig {
+    optional int64 capsuledb_size = 205739939;
+}

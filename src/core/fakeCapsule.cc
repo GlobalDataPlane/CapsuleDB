@@ -43,7 +43,7 @@ void sha256_string(const char *string, char outputBuffer[65])
 std::string putCapsuleBlock(CapsuleBlock inputBlock)
 {
     // Serialize Block
-    capsuleDBSerialization::CapsuleBlock protobufBlock;
+    capsuleDBProtos::CapsuleBlock protobufBlock;
     // TODO: Change this to something more robust than a counter
     protobufBlock.set_counter(counter);
     counter++;
@@ -52,7 +52,7 @@ std::string putCapsuleBlock(CapsuleBlock inputBlock)
     protobufBlock.set_endkey(inputBlock.getMaxKey());
 
     for (int i = 0; i < inputBlock.kvPairs.size(); i++) {
-        capsuleDBSerialization::Kvs_payload* kvs_payload_serialized = protobufBlock.add_kvpairs();
+        capsuleDBProtos::Kvs_payload* kvs_payload_serialized = protobufBlock.add_kvpairs();
         kvs_payload_serialized->set_key(inputBlock.kvPairs[i].key);
         kvs_payload_serialized->set_value(inputBlock.kvPairs[i].value);
         kvs_payload_serialized->set_txn_timestamp(inputBlock.kvPairs[i].txn_timestamp);
@@ -92,7 +92,7 @@ std::string putCapsuleBlock(CapsuleBlock inputBlock)
 */
 CapsuleBlock getCapsuleBlock(std::string inputHash)
 {
-    capsuleDBSerialization::CapsuleBlock recoveredBlock;
+    capsuleDBProtos::CapsuleBlock recoveredBlock;
 
     // Retrieve and deserialize block
     std::ifstream storedBlock;

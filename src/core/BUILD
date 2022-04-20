@@ -30,9 +30,11 @@ proto_library(
     name="capsuleBlock_proto",
     srcs=[
         "capsuleBlock.proto",
-        ":kvs_payload.proto"
     ],
-    deps=["@com_google_asylo//asylo:enclave_proto"],
+    deps=[
+        ":kvs_payload_proto",
+        "@com_google_asylo//asylo:enclave_proto"
+    ],
 )
 
 cc_proto_library(
@@ -51,8 +53,6 @@ cc_library(
         "fakeCapsule.hh",
     ],
     deps=[
-        "@boost//:archive",
-        "@boost//:serialization",
         ":fakeCapsule",
         "//src/shared:capsule",
     ],
@@ -73,8 +73,6 @@ cc_library(
         "//src/shared:capsule",
         # "//src/shared:crypto",
         "//src/uuid_v4:uuid",
-        "@boost//:archive",
-        "@boost//:serialization",
         "@com_github_grpc_grpc//:grpc++",
         ":capsuleBlock_cc_proto",
         "@com_google_asylo//asylo/util:logging",

@@ -1,17 +1,5 @@
 #
-# Copyright 2018 Asylo authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# Build file for the enclaved version of CapsuleDB
 #
 
 load("@linux_sgx//:sgx_sdk.bzl", "sgx")
@@ -26,48 +14,69 @@ package(
     default_visibility = ["//visibility:public"],
 )
 
-# Example and exercise for using Asylo toolkits.
+# Protobuf Targets
 proto_library(
-    name = "demo_proto",
-    srcs = ["demo.proto"],
-    deps = ["@com_google_asylo//asylo:enclave_proto"],
+    name = "request_proto",
+    srcs = ["capsuleDBRequest.proto"],
+    deps = [
+        "//src/core:kvs_payload_proto",
+        "@com_google_asylo//asylo:enclave_proto",
+    ],
 )
 
 cc_proto_library(
-    name = "demo_cc_proto",
-    deps = [":demo_proto"],
+    name = "request_cc_proto",
+    deps = [":request_proto"]
 )
 
+proto_library(
+    name = "setup_proto",
+    srcs = ["capsuleDBSetup.proto"],
+    deps = [
+        "@com_google_asylo//asylo:enclave_proto",
+    ],
+)
+
+cc_proto_library(
+    name = "setup_cc_proto",
+    deps = [":setup_proto"]
+)
+
+# Enclave Targets
+
 cc_unsigned_enclave(
-    name = "demo_enclave_unsigned.so",
-    srcs = ["demo_enclave.cc"],
+    name = "capsuleDB_enclave_unsigned.so",
+    srcs = [
+        "capsuleDB_enclave.cc",
+    ],
     copts = ASYLO_DEFAULT_COPTS,
     deps = [
-        ":demo_cc_proto",
         "//src/core:capsuleEngine",
+        "//src/shared:capsule",
+        ":request_cc_proto",
+        ":setup_cc_proto",
         "@com_google_asylo//asylo:enclave_runtime",
-        "@com_google_asylo//asylo/crypto:aead_cryptor",
-        "@com_google_asylo//asylo/util:cleansing_types",
         "@com_google_asylo//asylo/util:status",
-        "@com_google_absl//absl/base:core_headers",
-        "@com_google_absl//absl/strings",
     ],
 )
 
 debug_sign_enclave(
-    name = "demo_enclave.so",
-    unsigned = "demo_enclave_unsigned.so",
+    name = "capsuleDB_enclave.so",
+    unsigned = "capsuleDB_enclave_unsigned.so",
 )
 
 enclave_loader(
-    name = "quickstart",
-    srcs = ["demo_driver.cc"],
+    name = "capsuleDB_enclave",
+    srcs = ["capsuleDB_driver.cc"],
     backends = sgx.backend_labels,  # Has SGX loader dependencies
     copts = ASYLO_DEFAULT_COPTS,
-    enclaves = {"enclave": ":demo_enclave.so"},
+    enclaves = {"enclave": ":capsuleDB_enclave.so"},
     loader_args = ["--enclave_path='{enclave}'"],
     deps = [
+        "//src/shared:capsule",
         ":demo_cc_proto",
+        ":request_cc_proto",
+        ":setup_cc_proto",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
         "@com_google_asylo//asylo:enclave_cc_proto",
@@ -78,6 +87,6 @@ enclave_loader(
             "@linux_sgx//:sgx_hw": ["@com_google_asylo//asylo/platform/primitives/sgx:loader_cc_proto"],
             "@linux_sgx//:sgx_sim": ["@com_google_asylo//asylo/platform/primitives/sgx:loader_cc_proto"],
         },
-        no_match_error = "quickstart is only configured to use the SGX backends",
+        no_match_error = "CapsuleDB is only configured to use the SGX backends",
     ),
 )

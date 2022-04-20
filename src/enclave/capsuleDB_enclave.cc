@@ -1,70 +1,138 @@
-#include "capsuleDB_enclave.hh"
-
 #include <string>
 
-#include "engine.hh"
-#include "src/capsuleDBcpp/capsuleDB.pb.h"
+#include "asylo/trusted_application.h"
+#include "asylo/util/status_macros.h"
+
+#include "../core/engine.hh"
+#include "src/shared/capsule.h"
+#include "src/enclave/capsuleDBRequest.pb.h"
+#include "src/enclave/capsuleDBSetup.pb.h"
+
+CapsuleDB * db;
 
 namespace asylo {
-    namespace {
 
-    }  // namespace
+class CapsuleDBEnclaveClient : public TrustedApplication {
+    public:
+    CapsuleDBEnclaveClient() = default;
 
-    Status CapsuleDBClient::Initialize(const EnclaveConfig &config){
-        LOG(INFO) << "Entered CapsuleDB enclave";
-        // size_t blocksize = GetEnclaveBlocksize(config);
-        size_t blocksize = 50
-        db = CapsuleDB(blocksize);
-        return asylo::Status::OkStatus();
-    }
-
-    Status CapsuleDBClient::Run(const EnclaveInput &input, EnclaveOutput *output) {
-        const std::string requestedKey = GetEnclaveRequestedKey(input);
-
-        if (requestedKey == "") {
-            kvs_payload payload = GetEnclavePayload(input);
-            db.put(payload);
+    Status Initialize(const asylo::EnclaveConfig &enclave_config) {
+        if (enclave_config.HasExtension(capsuleDBProtos::capsuledb_size)) {
+            db = spawnDB(enclave_config.GetExtension(capsuleDBProtos::capsuledb_size));
         } else {
-            kvs_payload payload = db.get(requestedKey);
-            SetEnclaveOutputPayload(output, payload);
+            db = spawnDB(50);
         }
-       
         return absl::OkStatus();
     }
 
-    int32_t CapsuleDBClient::GetEnclaveBlocksize(const EnclaveLoadConfig &config) {
-        return config.GetExtension(capsuleDB::dbConfig).blocksize();
+    Status Run(const EnclaveInput &input, EnclaveOutput *output) {
+        
+        if (input.GetExtension(capsuleDBProtos::quickstart_input).requestedkey() == "") {
+        kvs_payload payload;
+        payload.key = input.GetExtension(capsuleDBProtos::quickstart_input).payload().key();
+        payload.value = input.GetExtension(capsuleDBProtos::quickstart_input).payload().value();
+        payload.txn_timestamp = input.GetExtension(capsuleDBProtos::quickstart_input).payload().txn_timestamp();
+        db->put(&payload);
+        } else {
+        std::string requestedKey = input.GetExtension(capsuleDBProtos::quickstart_input).requestedkey();
+        kvs_payload retrievedPayload = db->get(requestedKey);
+        capsuleDBProtos::DBRequest *output_request = output->MutableExtension(capsuleDBProtos::quickstart_output);
+        capsuleDBProtos::Kvs_payload* kvs_payload_serialized = output_request->mutable_payload();
+        kvs_payload_serialized->set_key(retrievedPayload.key);
+        kvs_payload_serialized->set_value(retrievedPayload.value);
+        kvs_payload_serialized->set_txn_timestamp(retrievedPayload.txn_timestamp);
+        }
+        return absl::OkStatus();
     }
+};
 
-    // Retrieves user message from |input|.
-    const std::string CapsuleDBClient::GetEnclaveRequestedKey(const EnclaveInput &input) {
-        return input.GetExtension(capsuleDB::capsuleDBEnclaveInput).requestedkey();
-    }
+TrustedApplication *BuildTrustedApplication() { return new CapsuleDBEnclaveClient; }
 
-    // Retrieves user action from |input|.
-    kvs_payload CapsuleDBClient::GetEnclavePayload(const EnclaveInput &input) {
-        const capsuleDB::DBRequest::kvs_payload& incoming_payload = input.GetExtension(capsuleDB::capsuleDBEnclaveOutput).payload();
-        kvs_payload kvs;
-        kvs.key = incoming_payload.key();
-        kvs.value = incoming_payload.value();
-        kvs.txn_timestamp = incoming_payload.timestamp();
-        return kvs;
-    }
+}  // namespace asylos
 
-    // Populates |enclave_output|->value() with |output_message|. Intended to be
-    // used by the reader for completing the exercise.
-    void CapsuleDBClient::SetEnclaveOutputPayload(EnclaveOutput *enclave_output,
-                                kvs_payload retrieved_payload) {
-        capsuleDB::DBRequest *output = enclave_output->MutableExtension(capsuleDB::capsuleDBEnclaveInput);
-        capsuleDB::DBRequest::kvs_payload new_payload = output->payload();
-        new_payload.set_key(retrieved_payload.key);
-        new_payload.set_value(retrieved_payload.value);
-        new_payload.set_timestamp(retrieved_payload.txn_timestamp);
-    }
 
-    TrustedApplication *BuildTrustedApplication() { return new CapsuleDBClient; }
 
-}  // namespace asylo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// #include "capsuleDB_enclave.hh"
+
+// #include <string>
+
+// #include "engine.hh"
+// #include "src/capsuleDBcpp/capsuleDB.pb.h"
+
+// namespace asylo {
+//     namespace {
+
+//     }  // namespace
+
+//     Status CapsuleDBClient::Initialize(const EnclaveConfig &config){
+//         LOG(INFO) << "Entered CapsuleDB enclave";
+//         // size_t blocksize = GetEnclaveBlocksize(config);
+//         size_t blocksize = 50
+//         db = CapsuleDB(blocksize);
+//         return asylo::Status::OkStatus();
+//     }
+
+//     Status CapsuleDBClient::Run(const EnclaveInput &input, EnclaveOutput *output) {
+//         const std::string requestedKey = GetEnclaveRequestedKey(input);
+
+//         if (requestedKey == "") {
+//             kvs_payload payload = GetEnclavePayload(input);
+//             db.put(payload);
+//         } else {
+//             kvs_payload payload = db.get(requestedKey);
+//             SetEnclaveOutputPayload(output, payload);
+//         }
+       
+//         return absl::OkStatus();
+//     }
+
+//     int32_t CapsuleDBClient::GetEnclaveBlocksize(const EnclaveLoadConfig &config) {
+//         return config.GetExtension(capsuleDB::dbConfig).blocksize();
+//     }
+
+//     // Retrieves user message from |input|.
+//     const std::string CapsuleDBClient::GetEnclaveRequestedKey(const EnclaveInput &input) {
+//         return input.GetExtension(capsuleDB::capsuleDBEnclaveInput).requestedkey();
+//     }
+
+//     // Retrieves user action from |input|.
+//     kvs_payload CapsuleDBClient::GetEnclavePayload(const EnclaveInput &input) {
+//         const capsuleDB::DBRequest::kvs_payload& incoming_payload = input.GetExtension(capsuleDB::capsuleDBEnclaveOutput).payload();
+//         kvs_payload kvs;
+//         kvs.key = incoming_payload.key();
+//         kvs.value = incoming_payload.value();
+//         kvs.txn_timestamp = incoming_payload.timestamp();
+//         return kvs;
+//     }
+
+//     // Populates |enclave_output|->value() with |output_message|. Intended to be
+//     // used by the reader for completing the exercise.
+//     void CapsuleDBClient::SetEnclaveOutputPayload(EnclaveOutput *enclave_output,
+//                                 kvs_payload retrieved_payload) {
+//         capsuleDB::DBRequest *output = enclave_output->MutableExtension(capsuleDB::capsuleDBEnclaveInput);
+//         capsuleDB::DBRequest::kvs_payload new_payload = output->payload();
+//         new_payload.set_key(retrieved_payload.key);
+//         new_payload.set_value(retrieved_payload.value);
+//         new_payload.set_timestamp(retrieved_payload.txn_timestamp);
+//     }
+
+//     TrustedApplication *BuildTrustedApplication() { return new CapsuleDBClient; }
+
+// }  // namespace asylo
 
 
 
