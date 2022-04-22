@@ -34,3 +34,6 @@ bazel-my-project
 bazel-out
 bazel-testlogs
 a.out
+
+# Additonal files
+setup.sh

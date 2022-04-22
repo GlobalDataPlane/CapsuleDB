@@ -18,6 +18,7 @@ cc_library(
 cc_library(
     name="common",
     srcs=["common.h"],
+    deps=[":benchmark"]
 )
 
 cc_library(
