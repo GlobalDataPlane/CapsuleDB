@@ -14,11 +14,11 @@ message DBRequest {
 // The EnclaveInput message that is passed to the enclave can be extended with
 // a Demo message to communicate a value our enclave knows to expect.
 extend .asylo.EnclaveInput {
-    optional DBRequest quickstart_input = 9001;
+    optional DBRequest request_input = 9001;
   }
   
   // The EnclaveOutput message that is passed out of the enclave can be extended
   // with a Demo message to communicate a value our driver knows to expect.
   extend .asylo.EnclaveOutput {
-    optional DBRequest quickstart_output = 9001;
+    optional DBRequest request_output = 9001;
   }
