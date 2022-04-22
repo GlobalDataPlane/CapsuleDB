@@ -18,9 +18,9 @@ package(
 )
 
 cc_binary(
-    name="capsuleDBTest",
+    name="test_core",
     srcs=[
-        "test_files/test.cc",
+        "test_files/test_core.cc",
     ],
     deps=[
         "//src/core:capsuleEngine",
