@@ -30,6 +30,7 @@ Enclave/Enclave_t.h
 measurments
 
 bazel-bin
+bazel-CapsuleDB
 bazel-my-project
 bazel-out
 bazel-testlogs
