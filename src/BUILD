@@ -24,6 +24,7 @@ cc_binary(
     ],
     deps=[
         "//src/core:capsuleEngine",
+        "//src/shared:capsule",
     ]
 )
 

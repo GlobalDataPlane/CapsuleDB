@@ -1,133 +1,57 @@
-#include <string>
 #include <iostream>
+#include <map>
+#include <string>
+#include <vector>
 
 #include "src/core/engine.hh"
+#include "src/shared/capsule.h"
+
 
 int main()
 {
-    // Create instance with memtable/blocksize capacity of 2 key-value pairs
     CapsuleDB* instance = spawnDB(50);
-    instance->benchmark2();
-    //std::string check_value = instance.get("6164213995759621");
-    //std::cout << "OUTPUT value=" << check_value << "\n\n";
-    instance->benchmark_verify();
-    // // Put testval at testkey
-    // CapsuleDB instance = spawnDB(2);
-    // kvs_payload kvsp_put = {};
-    // std::string requestedVal;
+    int test_count = 0;
+    std::map <std::string, std::string> test_map;
 
-    // // Put testval2 at testkey2
-    // kvsp_put.key = "testkey2";
-    // kvsp_put.value = "testval2";
-    // kvsp_put.txn_timestamp = 1;
-    // instance.put(&kvsp_put);
-    // requestedVal = instance.get("testkey2");
-    // std::cout << "OUTPUT value=" << requestedVal << "\n\n";
+    // Put keys into database
+    for(int i=1; i<2000; i++) {
+        test_map.insert({std::to_string(i),std::to_string(i)});
+        kvs_payload kvs;
+        kvs.key = std::to_string(i);
+        kvs.value = std::to_string(i);
 
-    // // Put testval5 at testkey5
-    // kvsp_put.key = "testkey5";
-    // kvsp_put.value = "testval5";
-    // kvsp_put.txn_timestamp = 2;
-    // instance.put(&kvsp_put);
-    // requestedVal = instance.get("testkey5");
-    // std::cout << "OUTPUT value=" << requestedVal << "\n\n";
+        kvs.txn_timestamp = std::chrono::system_clock::to_time_t(
+                        std::chrono::system_clock::now());
+        instance->put(&kvs);
+    }
 
-    // // Put testval4 at testkey4, causing memtable to write out to Level 0
-    // kvsp_put.key = "testkey4";
-    // kvsp_put.value = "testval4";
-    // kvsp_put.txn_timestamp = 3;
-    // instance.put(&kvsp_put);
-    // requestedVal = instance.get("testkey4");
-    // std::cout << "OUTPUT value=" << requestedVal << "\n\n";
+    // Verify
+    int num_found = 0;
+    std::vector<std::string> failed_keys; 
+    for(const auto& [key, value] : test_map) {
+        kvs_payload payload = instance->get(key);
+        std::string value1 = payload.value;
+        if(value1==""){
+            failed_keys.push_back(key);
+            // std::cout << key << "not found in capsuleDB";
+            test_count++;
+        }
+        if(value1 == value){
+            num_found++;
+        }
+    }
 
-    // // Put testval1 at testkey1
-    // kvsp_put.key = "testkey1";
-    // kvsp_put.value = "testval1";
-    // kvsp_put.txn_timestamp = 4;
-    // instance.put(&kvsp_put);
-    // requestedVal = instance.get("testkey1");
-    // std::cout << "OUTPUT value=" << requestedVal << "\n\n";
-
-    // // Put testval6 at testkey6, causing memtable to write out to Level 0. This should also cause compaction to Level 1.
-    // kvsp_put.key = "testkey6";
-    // kvsp_put.value = "testval6";
-    // kvsp_put.txn_timestamp = 5;
-    // instance.put(&kvsp_put);
-    // requestedVal = instance.get("testkey6");
-    // std::cout << "OUTPUT value=" << requestedVal << "\n\n";
-
-    // // Put testval3 at testkey1, overriding testval
-    // kvsp_put.key = "testkey1";
-    // kvsp_put.value = "testval3";
-    // kvsp_put.txn_timestamp = 6;
-    // instance.put(&kvsp_put);
-    // requestedVal = instance.get("testkey1");
-    // std::cout << "OUTPUT value=" << requestedVal << "\n\n";
-
-    // // Put testval7 at testkey7, causing memtable to write out to Level 0. 
-    // kvsp_put.key = "testkey7";
-    // kvsp_put.value = "testval7";
-    // kvsp_put.txn_timestamp = 7;
-    // instance.put(&kvsp_put);
-    // requestedVal = instance.get("testkey7");
-    // std::cout << "OUTPUT value=" << requestedVal << "\n\n";
-
-    // // Put testval8 at testkey1, overriding testval
-    // kvsp_put.key = "testkey1";
-    // kvsp_put.value = "testval8";
-    // kvsp_put.txn_timestamp = 8;
-    // instance.put(&kvsp_put);
-    // requestedVal = instance.get("testkey1");
-    // std::cout << "OUTPUT value=" << requestedVal << "\n\n";
-
-    // // Put testval9 at testkey9, causing memtable to write out to Level 0. This should also cause compaction to Level 1.
-    // kvsp_put.key = "testkey9";
-    // kvsp_put.value = "testval9";
-    // kvsp_put.txn_timestamp = 9;
-    // instance.put(&kvsp_put);
-    // requestedVal = instance.get("testkey9");
-    // std::cout << "OUTPUT value=" << requestedVal << "\n\n";
-
-
-    // // Expected Outcome:
-    // // Memtable = {[9, 9]}
-    // // L0 = {}  
-    // // L1 = {[[1, 8] [2, 2]], [[4, 4] [5, 5]], [[6, 6] [7, 7]]}
-
-    // // Get value of testkey1 (should be testval8), shouldn't be in memtable, should have to check Level 1
-    // requestedVal = instance.get("testkey1");
-    // std::cout << "OUTPUT value=" << requestedVal << "\n\n";
-    // // Get value of testkey2 (should be testval2), shouldn't be in memtable, should have to check Level 1
-    // requestedVal = instance.get("testkey2");
-    // std::cout << "OUTPUT value=" << requestedVal << "\n\n";
-    // // Get value of testkey4 (should be testval4), shouldn't be in memtable, should have to check Level 1
-    // requestedVal = instance.get("testkey4");
-    // std::cout << "OUTPUT value=" << requestedVal << "\n\n";
-    // // Get value of testkey5 (should be testval5), shouldn't be in memtable, should have to check Level 1
-    // requestedVal = instance.get("testkey5");
-    // std::cout << "OUTPUT value=" << requestedVal << "\n\n";
-    // // Get value of testkey6 (should be testval6), shouldn't be in memtable, should have to check Level 1
-    // requestedVal = instance.get("testkey6");
-    // std::cout << "OUTPUT value=" << requestedVal << "\n\n";
-    // // Get value of testkey7 (should be testval7), shouldn't be in memtable, should have to check Level 1
-    // requestedVal = instance.get("testkey7");
-    // std::cout << "OUTPUT value=" << requestedVal << "\n\n";
-    // // Get value of testkey9 (should be testval9), should be in memtable
-    // requestedVal = instance.get("testkey9");
-    // std::cout << "OUTPUT value=" << requestedVal << "\n\n";
-
-    // // Put testval10 at testkey10, causing memtable to write out to Level 0. This should also cause compaction to Level 1.
-    // kvsp_put.key = "testkey10";
-    // kvsp_put.value = "testval10";
-    // kvsp_put.txn_timestamp = 10;
-    // instance.put(&kvsp_put);
-    // requestedVal = instance.get("testkey10");
-    // std::cout << "OUTPUT value=" << requestedVal << "\n\n";
-
-
-    // Expected Outcome:
-    // Memtable = {[9, 9], [10, 10]}
-    // L0 = {}  
-    // L1 = {[[1, 8] [2, 2]], [[4, 4] [5, 5]], [[6, 6] [7, 7]]}
-
+    std::cout << "Num levels at end: " << instance->index.levels.size() << "\n";
+    for (int i = 0; i < instance->index.levels.size(); i++) {
+        std::cout << "Stats for level " << instance->index.levels[i].index << std::endl;
+        std::cout << "First key l" << i << ": " << instance->index.levels[i].recordHashes[0].minKey << "\n";
+        std::cout << "Last key l" << i << ": " << instance->index.levels[i].recordHashes[instance->index.levels[i].recordHashes.size() - 1].maxKey << "\n";
+        std::cout << "Max size l" << i << ": " << instance->index.levels[i].maxSize << "\n";
+        std::cout << "Num blocks in l" << i << ": "  << instance->index.levels[i].numBlocks << " and length of actual vector: " << instance->index.levels[i].recordHashes.size() << std::endl;
+    }
+    std::cout << "no.of.keys not found is: " << test_count << "\n";
+    std::cout << "no.of.keys found is: " << num_found << "\n";
+    std::cout << "size of test_map: " <<test_map.size() << "\n"; 
+    for(int x=0; x < failed_keys.size();x++)
+        std::cout << failed_keys.at(x)<<" ";
 }

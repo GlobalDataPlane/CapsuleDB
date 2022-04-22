@@ -18,7 +18,7 @@ docker run -it --rm \
     keplerc/paranoid-asylo:latest 
 ```
 
-This should result in being dropped into an interactive session within the Docker container.  Specifically, you should see the following:
+Given that you will be running these two commands every time you start working on CapsuleDB, I would recommend writing a script.  The commands should result in you being dropped into an interactive session within the Docker container.  Specifically, you should see the following:
 
 ```bash
 root@<container_hash>:/opt/my-project#
@@ -27,7 +27,7 @@ root@<container_hash>:/opt/my-project#
 At this point, executing the `ls` command should list the folders in the repo.  From here, you can execute Bazel commands as normal.  To ensure everything is working correctly, start with the following basic sanity check:
 
 ```bash
-bazel run //src:capsuleDBTest
+bazel run //src:test_core
 ```
 
 This should result in 1999 key-value pairs being written and retrieved from CapsuleDB.  The stats at the end should read as:

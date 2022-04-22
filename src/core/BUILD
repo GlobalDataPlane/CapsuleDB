@@ -142,9 +142,6 @@ cc_library(
         ":memtable",
         ":capsuleIndex",
         "//src/shared:capsule",
-        "//src/shared:common",
-        "//src/shared:benchmark",
-        "@com_google_absl//absl/strings",
     ],
 )
 
