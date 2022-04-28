@@ -1,0 +1,14 @@
+syntax = "proto2";
+
+package capsuleDBProtos;
+
+import "src/core/kvs_payload.proto";
+
+message CapsuleBlock{
+  optional int64 counter = 1;
+  optional int64 level = 2;
+  optional string startKey = 3;
+  optional string endKey = 4;
+
+  repeated Kvs_payload kvpairs = 5;
+}

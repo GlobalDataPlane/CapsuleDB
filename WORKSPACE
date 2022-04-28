@@ -49,11 +49,11 @@ load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_depende
 #     build_file = "//src:BUILD.fcl",
 # )
 
-http_archive(
-    name = "boringssl",
-    strip_prefix = "boringssl-16100fd5073b3986ca03efa6bbb501c2e061e7e3",
-    urls = ["https://github.com/google/boringssl/archive/16100fd5073b3986ca03efa6bbb501c2e061e7e3.zip"],
-)
+# http_archive(
+#     name = "boringssl",
+#     strip_prefix = "boringssl-16100fd5073b3986ca03efa6bbb501c2e061e7e3",
+#     urls = ["https://github.com/google/boringssl/archive/16100fd5073b3986ca03efa6bbb501c2e061e7e3.zip"],
+# )
 
 new_git_repository(
     name = "bp32",

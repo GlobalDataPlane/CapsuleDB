@@ -18,7 +18,7 @@ docker run -it --rm \
     keplerc/paranoid-asylo:latest 
 ```
 
-This should result in being dropped into an interactive session within the Docker container.  Specifically, you should see the following:
+Given that you will be running these two commands every time you start working on CapsuleDB, I would recommend writing a script.  The commands should result in you being dropped into an interactive session within the Docker container.  Specifically, you should see the following:
 
 ```bash
 root@<container_hash>:/opt/my-project#
@@ -27,7 +27,7 @@ root@<container_hash>:/opt/my-project#
 At this point, executing the `ls` command should list the folders in the repo.  From here, you can execute Bazel commands as normal.  To ensure everything is working correctly, start with the following basic sanity check:
 
 ```bash
-bazel run //src:capsuleDBTest
+bazel run //src:test_core
 ```
 
 This should result in 1999 key-value pairs being written and retrieved from CapsuleDB.  The stats at the end should read as:
@@ -50,6 +50,28 @@ size of test_map: 1999
 
 Congratulations!  You have just executed your first puts and gets against CapsuleDB!
 
+## Enclave Test
+
+CapsuleDB is equipped with an enclave interface, allowing it to be securely run within an Intel SGX enclave.  It is built using Asylo, so that theoretically, once Asylo supports other trusted execution environment backends, it will be immediately portable.  However, Asylo only supports Intel SGX at the moment, and thus so do we.  
+
+This codebase contains two slightly different enclave based tests, `test_enclave_basic.cc` and `test_enclave_interface.cc`, both of which can be found in the `test_files` directory.  `test_enclave_basic.cc` tests the basic functionality of the enclave itself, linking directly to it.  In contrast, `test_enclave_interface.cc` goes through a separate interface designed for better modularity.  They can be run with the following commands:
+
+```bash
+bazel run //src:test_enclave_basic_sgx_sim --
+bazel run //src:test_enclave_interface_sgx_sim --
+```
+
+If SGX hardware is available, you can use the following commands instead:
+
+```bash
+bazel run //src:test_enclave_basic_sgx_hw --
+bazel run //src:test_enclave_interface_sgx_hw --
+```
+
+Some guidance on writing new enclave tests:  To use the interface, you must use the provided constructor and the `finalize()` method.  In addition, to use the interface you must mark `//src/enclave:enclave_interface` as a dependency in the relevant `BUILD` file.  Then, ensure you have all the correct Asylo and SGX dependencies.  Finally, ensure you include the relevant abseil functions at the top of your test, as well as the relevant `absl` dependencies, so that your test correctly retrives the enclave name.  See the `test_enclave_interface.cc` file and the `test_enclave_interface` target in `src/BUILD` for an example.  
+
+Note that the enclave interface differs from the way the enclave is implemented in the PSL project.  There, a function called `handle()` manages the actual processing of the CapsulePDUs.  While also doable here, CapsuleDB's current model does not require it.  Given that it is unclear whether there are any additional performance benefits, I did not implement it at this time.  
+
 ## Codebase Structure
 
 CapsuleDB is made up of several core files stored in `src/core`.  There you will find the main CapsuleDB logic, including the main engine file, the indexing logic, and the block logic.  You will also come across several `BUILD` files used to identify different Bazel packages.  For more information on packages, I highly recommend you look through [this part of the Bazel docs](https://docs.bazel.build/versions/main/tutorial/cpp.html).
@@ -67,10 +89,22 @@ Since there are many of us working on CapsuleDB simultaneously, please make sure
 There is lots to do on CapsuleDB!  Here is a short list of things that still needs to be dealt with, in order of priority.
 
 - [x] Refactor entire codebase for better modularity and smaller BUILD files (hopefully this has partially fixed the ridiculous build times)
-- [ ] Change serialization away from Boost library
-- [ ] Add enclave compatability with `handle()` method (see PSL codebase for example)
-- [ ] Update README to include how to run enclave tests
+- [x] Change serialization away from Boost library
+- [ ] Update serialization so it does not use a counter
+- [x] Add enclave compatability with `handle()` method (see PSL codebase for example)
+THIS HAS BEEN ADJUSTED -> See enclave section of README.
+- [x] Update README to include how to run enclave tests
 - [ ] Update local networking implementation to match that of PSL
 - [ ] Update README to include how to run networking test
 - [ ] Remove CapsuleDB implementation currently in PSL and convert to either Git submodule or use a Bazel load targeting this repo / version (hooray for modularity! :tada:)
 - [ ] Update README with description of how CapsuleDB actually works under the hood
+
+## Contributors
+
+Lead: William Mullen
+
+Contributors:
+- Nivedha Krishnakumar
+- Brian Wu
+- Willis Wang
+- Ryan Teoh

@@ -1,18 +1,5 @@
 # Core CapsuleDB Implementation Build file
 
-# Commands:
-
-# MY_PROJECT=~/Documents/Research/paranoid-sgx
-
-# docker run -it --rm \
-#    -v bazel-cache:/root/.cache/bazel \
-#     -v "${MY_PROJECT}":/opt/my-project \
-#     -w /opt/my-project \
-#     keplerc/paranoid-asylo:latest 
-
-# bazel run //src:capsuleDBTest
-
-
 load("@linux_sgx//:sgx_sdk.bzl", "sgx")
 load("@com_github_grpc_grpc//bazel:cc_grpc_library.bzl", "cc_grpc_library")
 load("@rules_cc//cc:defs.bzl", "cc_proto_library")
@@ -27,6 +14,34 @@ package(
     default_visibility = ["//visibility:public"],
 )
 
+# Protobuf targets
+proto_library(
+    name="kvs_payload_proto",
+    srcs=["kvs_payload.proto"],
+    deps=["@com_google_asylo//asylo:enclave_proto"],
+)
+
+cc_proto_library(
+    name="kvs_payload_cc_proto",
+    deps=[":kvs_payload_proto"],
+)
+
+proto_library(
+    name="capsuleBlock_proto",
+    srcs=[
+        "capsuleBlock.proto",
+    ],
+    deps=[
+        ":kvs_payload_proto",
+        "@com_google_asylo//asylo:enclave_proto"
+    ],
+)
+
+cc_proto_library(
+    name="capsuleBlock_cc_proto",
+    deps=[":capsuleBlock_proto"],
+)
+
 # CapsuleDB targets
 cc_library(
     name = "capsuleBlock",
@@ -38,10 +53,8 @@ cc_library(
         "fakeCapsule.hh",
     ],
     deps=[
-        "@boost//:archive",
-        "@boost//:serialization",
         ":fakeCapsule",
-        "//src/shared:capsule"
+        "//src/shared:capsule",
     ],
 )
 
@@ -58,10 +71,12 @@ cc_library(
         "//src/shared:common",
         "//src/shared:benchmark",
         "//src/shared:capsule",
-        "//src/shared:crypto",
-        "@boost//:archive",
-        "@boost//:serialization",
+        # "//src/shared:crypto",
+        "//src/uuid_v4:uuid",
         "@com_github_grpc_grpc//:grpc++",
+        ":capsuleBlock_cc_proto",
+        "@com_google_asylo//asylo/util:logging",
+        "@com_google_absl//absl/strings",
     ],
 )
 
@@ -127,8 +142,6 @@ cc_library(
         ":memtable",
         ":capsuleIndex",
         "//src/shared:capsule",
-        "//src/shared:common",
-        "//src/shared:benchmark",
-        "@com_google_absl//absl/strings",
     ],
 )
+
