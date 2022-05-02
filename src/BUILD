@@ -80,3 +80,15 @@ enclave_loader(
         no_match_error = "CapsuleDB is only configured to use the SGX backends",
     ),
 )
+
+cc_binary(
+    name = "test_network",
+    srcs = [
+        "test_files/test_network.cc",
+    ],
+    linkopts=["-L/usr/local/lib", "-lzmq"],
+    deps = [
+        "//src/shared:capsule",
+        "//src/enclave:request_cc_proto",
+    ]
+)

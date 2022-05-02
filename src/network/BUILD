@@ -27,14 +27,3 @@ cc_binary(
     ],
 )
 
-cc_binary(
-    name = "networktest",
-    srcs = [
-        "networktest.cc",
-    ],
-    linkopts=["-L/usr/local/lib", "-lzmq"],
-    deps = [
-        "//src/shared:capsule",
-        "//src/enclave:request_cc_proto",
-    ]
-)
