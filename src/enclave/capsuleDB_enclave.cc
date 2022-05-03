@@ -28,19 +28,19 @@ class CapsuleDBEnclaveClient : public TrustedApplication {
     Status Run(const EnclaveInput &input, EnclaveOutput *output) {
         
         if (input.GetExtension(capsuleDBProtos::request_input).requestedkey() == "") {
-        kvs_payload payload;
-        payload.key = input.GetExtension(capsuleDBProtos::request_input).payload().key();
-        payload.value = input.GetExtension(capsuleDBProtos::request_input).payload().value();
-        payload.txn_timestamp = input.GetExtension(capsuleDBProtos::request_input).payload().txn_timestamp();
-        db->put(&payload);
+            kvs_payload payload;
+            payload.key = input.GetExtension(capsuleDBProtos::request_input).payload().key();
+            payload.value = input.GetExtension(capsuleDBProtos::request_input).payload().value();
+            payload.txn_timestamp = input.GetExtension(capsuleDBProtos::request_input).payload().txn_timestamp();
+            db->put(&payload);
         } else {
-        std::string requestedKey = input.GetExtension(capsuleDBProtos::request_input).requestedkey();
-        kvs_payload retrievedPayload = db->get(requestedKey);
-        capsuleDBProtos::DBRequest *output_request = output->MutableExtension(capsuleDBProtos::request_output);
-        capsuleDBProtos::Kvs_payload* kvs_payload_serialized = output_request->mutable_payload();
-        kvs_payload_serialized->set_key(retrievedPayload.key);
-        kvs_payload_serialized->set_value(retrievedPayload.value);
-        kvs_payload_serialized->set_txn_timestamp(retrievedPayload.txn_timestamp);
+            std::string requestedKey = input.GetExtension(capsuleDBProtos::request_input).requestedkey();
+            kvs_payload retrievedPayload = db->get(requestedKey);
+            capsuleDBProtos::DBRequest *output_request = output->MutableExtension(capsuleDBProtos::request_output);
+            capsuleDBProtos::Kvs_payload* kvs_payload_serialized = output_request->mutable_payload();
+            kvs_payload_serialized->set_key(retrievedPayload.key);
+            kvs_payload_serialized->set_value(retrievedPayload.value);
+            kvs_payload_serialized->set_txn_timestamp(retrievedPayload.txn_timestamp);
         }
         return absl::OkStatus();
     }

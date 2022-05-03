@@ -2,7 +2,7 @@
 
 CapsuleDB is a key-value store built specifically for use with the Global Data Plane and Paranoid Stateful Lambda system.  It is inspired by level-tree databases, such as RocksDB, but uses DataCapsules as its backing storage medium.  Read the initial specification for CapsuleDB [here](https://people.eecs.berkeley.edu/~kubitron/courses/cs262a-F21/projects/reports/project18_report_ver3.pdf).  This repo serves as the main development point for future CapsuleDB work.  
 
-## How to Build and Run
+## Building and Running
 
 CapsuleDB uses Bazel as its main building tool like the PSL project.  We have a Docker container that includes everything you need to get started.  Using the Docker container is highly recommended, and if you decide to go baremetal you are on your own.
 
@@ -72,6 +72,68 @@ Some guidance on writing new enclave tests:  To use the interface, you must use 
 
 Note that the enclave interface differs from the way the enclave is implemented in the PSL project.  There, a function called `handle()` manages the actual processing of the CapsulePDUs.  While also doable here, CapsuleDB's current model does not require it.  Given that it is unclear whether there are any additional performance benefits, I did not implement it at this time.  
 
+## Networking Test
+
+Until this point, CapsuleDB and its associated tests have essentially been run as an application, it runs, finishes, and exits.  However, databases rarely operate that way, instead running as a server or service.  Using [ZeroMQ](https://zeromq.org/), CapsuleDB can be run as a server, receiving and processing requests regardless of their source.  You can run the basic networking test using two different terminals using the following commands:
+
+```bash
+MY_PROJECT=/path/to/capsuledb_repo
+
+docker run -it --rm \
+    -v bazel-cache:/root/.cache/bazel \
+    -v "${MY_PROJECT}":/opt/my-project \
+    -w /opt/my-project \
+    keplerc/paranoid-asylo:latest 
+```
+
+You should now be in an interactive session within the container.  In a separate terminal window, execute `docker ps` to find the name of the container.  In your second terminal, run `docker exec -it <container_name> bash` to gain a second terminal within the container.
+
+In your first terminal window, you will run the server.  Run the following command:
+
+```bash
+bazel run //src/network:capsuleDB_server
+```
+
+Then, in your second terminal, execute the test with:
+
+```bash
+bazel run //src:test_network
+```
+
+If it is successful, you should see the following result:
+
+```text
+Connecting to hello world server...
+Connected
+Sending payload
+Start Get
+Sending get request
+Receiving get request
+Retrieved value: Test value
+```
+
+Switching back to your first terminal, you will also be able to monitor and see CapsuleDB handling the incoming requests.  When running the test, you should see the following in your server window:
+
+```text
+Starting server
+Server ready
+Received new message
+Received put request
+Payload key: Test key and value: Test value
+PUT key=Test key, value=Test value
+Received new message
+Received get request
+GET key=Test key
+```
+
+To empty the database, simply stop the process in the server window and start it again with the same bazel run command.  If you would like to test using an enclave version of CapsuleDB, start the server with the following command instead:
+
+```bash
+bazel run //src/network:capsuleDB_enclave_server
+```
+
+This server should also be used for YCSB benchmarking; instructions and bindings can be found [here](https://github.com/GlobalDataPlane/YCSB).
+
 ## Codebase Structure
 
 CapsuleDB is made up of several core files stored in `src/core`.  There you will find the main CapsuleDB logic, including the main engine file, the indexing logic, and the block logic.  You will also come across several `BUILD` files used to identify different Bazel packages.  For more information on packages, I highly recommend you look through [this part of the Bazel docs](https://docs.bazel.build/versions/main/tutorial/cpp.html).
@@ -94,8 +156,9 @@ There is lots to do on CapsuleDB!  Here is a short list of things that still nee
 - [x] Add enclave compatability with `handle()` method (see PSL codebase for example)
 THIS HAS BEEN ADJUSTED -> See enclave section of README.
 - [x] Update README to include how to run enclave tests
-- [ ] Update local networking implementation to match that of PSL
-- [ ] Update README to include how to run networking test
+- [x] Update local networking implementation to match that of PSL
+- [x] See how janky the PSL networking stack was and implement simpler model
+- [x] Update README to include how to run networking test
 - [ ] Remove CapsuleDB implementation currently in PSL and convert to either Git submodule or use a Bazel load targeting this repo / version (hooray for modularity! :tada:)
 - [ ] Update README with description of how CapsuleDB actually works under the hood
 

@@ -1,7 +1,4 @@
-# Testing and integration build file.  
-
-# ONLY DO TESTING HERE, MAKE A SEPARATE BUILD FILE FOR PACKAGES
-
+# Core CapsuleDB Implementation Build file
 
 load("@linux_sgx//:sgx_sdk.bzl", "sgx")
 load("@com_github_grpc_grpc//bazel:cc_grpc_library.bzl", "cc_grpc_library")
@@ -18,51 +15,30 @@ package(
 )
 
 cc_binary(
-    name="test_core",
+    name = "capsuleDB_server",
     srcs=[
-        "test_files/test_core.cc",
+        "capsuleDB_server.cc",
     ],
+    linkopts=["-L/usr/local/lib", "-lzmq"],
     deps=[
         "//src/core:capsuleEngine",
         "//src/shared:capsule",
-    ]
-)
-
-enclave_loader(
-    name = "test_enclave_basic",
-    srcs = ["test_files/test_enclave_basic.cc"],
-    backends = sgx.backend_labels,  # Has SGX loader dependencies
-    copts = ASYLO_DEFAULT_COPTS,
-    enclaves = {"enclave": "//src/enclave:capsuleDB_enclave.so"},
-    loader_args = ["--enclave_path='{enclave}'"],
-    deps = [
-        "//src/shared:capsule",
         "//src/enclave:request_cc_proto",
-        "//src/enclave:setup_cc_proto",
-        "@com_google_absl//absl/flags:flag",
-        "@com_google_absl//absl/flags:parse",
-        "@com_google_asylo//asylo:enclave_cc_proto",
-        "@com_google_asylo//asylo:enclave_client",
-        "@com_google_asylo//asylo/util:logging",
-    ] + select(
-        {
-            "@linux_sgx//:sgx_hw": ["@com_google_asylo//asylo/platform/primitives/sgx:loader_cc_proto"],
-            "@linux_sgx//:sgx_sim": ["@com_google_asylo//asylo/platform/primitives/sgx:loader_cc_proto"],
-        },
-        no_match_error = "CapsuleDB is only configured to use the SGX backends",
-    ),
+    ],
 )
 
 enclave_loader(
-    name = "test_enclave_interface",
+    name = "capsuleDB_enclave_server",
     srcs = [
-        "test_files/test_enclave_interface.cc",
+        "capsuleDB_enclave_server.cc",
     ],
     backends = sgx.backend_labels,  # Has SGX loader dependencies
     copts = ASYLO_DEFAULT_COPTS,
     enclaves = {"enclave": "//src/enclave:capsuleDB_enclave.so"},
     loader_args = ["--enclave_path='{enclave}'"],
+    linkopts=["-L/usr/local/lib", "-lzmq"],
     deps = [
+        "//src/core:capsuleEngine",
         "//src/enclave:enclave_interface",
         "//src/shared:capsule",
         "//src/enclave:request_cc_proto",
@@ -79,16 +55,4 @@ enclave_loader(
         },
         no_match_error = "CapsuleDB is only configured to use the SGX backends",
     ),
-)
-
-cc_binary(
-    name = "test_network",
-    srcs = [
-        "test_files/test_network.cc",
-    ],
-    linkopts=["-L/usr/local/lib", "-lzmq"],
-    deps = [
-        "//src/shared:capsule",
-        "//src/enclave:request_cc_proto",
-    ]
 )
