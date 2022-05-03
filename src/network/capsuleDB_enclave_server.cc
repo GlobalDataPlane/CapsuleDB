@@ -1,8 +1,9 @@
-// CapsuleDB Server
+// Enclave CapsuleDB Server
 
 #include <cstddef>
 #include <zmq.hpp>
 #include "src/core/engine.hh"
+#include "src/enclave/capsuleDB_driver.hh"
 #include "src/enclave/capsuleDBRequest.pb.h"
 #include <string>
 #include <iostream>
@@ -14,21 +15,27 @@
 #define sleep(n)	Sleep(n)
 #endif
 
+#include "absl/flags/flag.h"
+#include "absl/flags/parse.h"
+
+ABSL_FLAG(std::string, enclave_path, "", "Path to enclave binary image to load");
+
 size_t MEMTABLE_SIZE = 50;
 
-int main () {
+int main (int argc, char *argv[]) {
+    absl::ParseCommandLine(argc, argv);
+    const std::string enclave_path = absl::GetFlag(FLAGS_enclave_path);
+    LOG_IF(QFATAL, enclave_path.empty()) << "Empty --enclave_path flag.";
     
-    std::cout << "Starting server" << std::endl;
+    std::cout << "Starting enclave server" << std::endl;
     //  Prepare our context and socket
     zmq::context_t context (2);
     zmq::socket_t socket (context, zmq::socket_type::dealer);
     socket.bind ("tcp://*:5555");
 
-    CapsuleDB *db = spawnDB(MEMTABLE_SIZE);
-    // zmq::socket_t* mcast_socket = new zmq::socket_t(context, ZMQ_PUSH);
-    // zmq::socket_t* recv_socket = new zmq::socket_t(context, ZMQ_PULL);
+    CapsuleDB_Driver db = CapsuleDB_Driver(enclave_path, "Test Enclave", 50);
 
-    std::cout << "Server ready" << std::endl;
+    std::cout << "Enclave server ready" << std::endl;
 
     while (true) {
         zmq::message_t request;
@@ -58,12 +65,12 @@ int main () {
             
             std::cout << "Payload key: " << payload.key << " and value: " << payload.value << std::endl;
 
-            db->put(&payload);
+            db.put(&payload);
         } else {
             std::cout << "Received get request" << std::endl;
 
             std::string requestedKey = parsedRequest.requestedkey();
-            kvs_payload retrievedPayload = db->get(requestedKey);
+            kvs_payload retrievedPayload = db.get(requestedKey);
             
             capsuleDBProtos::DBRequest output_request;
             capsuleDBProtos::Kvs_payload* kvs_payload_serialized = output_request.mutable_payload();
@@ -81,13 +88,15 @@ int main () {
                 throw std::logic_error("Request serialization failure.\n");
             }
 
-            // Push out on zmq
-            //  Send reply back to client
+            // Push out on socket to send reply back to client
             zmq::message_t reply (outgoing_payload.length());
             memcpy (reply.data (), outgoing_payload.c_str(), outgoing_payload.length());
             socket.send (reply);
         }
         
     }
+    // Required for correct enclave behavior
+    db.finalize();
+
     return 0;
 }

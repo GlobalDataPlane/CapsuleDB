@@ -126,7 +126,13 @@ Received get request
 GET key=Test key
 ```
 
-To empty the database, simply stop the process in the server window and start it again with the same bazel run command.  
+To empty the database, simply stop the process in the server window and start it again with the same bazel run command.  If you would like to test using an enclave version of CapsuleDB, start the server with the following command instead:
+
+```bash
+bazel run //src/network:capsuleDB_enclave_server
+```
+
+This server should also be used for YCSB benchmarking; instructions and bindings can be found [here](https://github.com/GlobalDataPlane/YCSB).
 
 ## Codebase Structure
 
