@@ -59,6 +59,11 @@ int main () {
             std::cout << "Payload key: " << payload.key << " and value: " << payload.value << std::endl;
 
             db->put(&payload);
+
+            zmq::message_t reply (5);
+            memcpy (reply.data (), "World", 5);
+            socket.send (reply, 0);
+
         } else {
             std::cout << "Received get request" << std::endl;
 
