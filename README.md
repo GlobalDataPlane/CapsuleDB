@@ -150,17 +150,16 @@ Since there are many of us working on CapsuleDB simultaneously, please make sure
 
 There is lots to do on CapsuleDB!  Here is a short list of things that still needs to be dealt with, in order of priority.
 
-- [x] Refactor entire codebase for better modularity and smaller BUILD files (hopefully this has partially fixed the ridiculous build times)
-- [x] Change serialization away from Boost library
+- [ ] Integrate DC server
+- [ ] Integrate signing
+- [ ] Improve block search algorithm (binary search?) for reads
+- [ ] Investigate Bloom Filters
 - [ ] Update serialization so it does not use a counter
-- [x] Add enclave compatability with `handle()` method (see PSL codebase for example)
-THIS HAS BEEN ADJUSTED -> See enclave section of README.
-- [x] Update README to include how to run enclave tests
-- [x] Update local networking implementation to match that of PSL
-- [x] See how janky the PSL networking stack was and implement simpler model
-- [x] Update README to include how to run networking test
 - [ ] Remove CapsuleDB implementation currently in PSL and convert to either Git submodule or use a Bazel load targeting this repo / version (hooray for modularity! :tada:)
 - [ ] Update README with description of how CapsuleDB actually works under the hood
+- [ ] Add option to compress CapsuleBlocks by using block write time as timestamp
+- [ ] Add failure restoration / startup from index
+- [ ] Add key deletion (must be local, no mechanism to do so from DC yet)
 
 ## Contributors
 
