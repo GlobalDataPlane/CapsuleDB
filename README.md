@@ -1,6 +1,6 @@
 # CapsuleDB
 
-CapsuleDB is a key-value store built specifically for use with the Global Data Plane and Paranoid Stateful Lambda system.  It is inspired by level-tree databases, such as RocksDB, but uses DataCapsules as its backing storage medium.  Read the initial specification for CapsuleDB [here](https://people.eecs.berkeley.edu/~kubitron/courses/cs262a-F21/projects/reports/project18_report_ver3.pdf).  This repo serves as the main development point for future CapsuleDB work.  
+CapsuleDB is a key-value store built specifically for use with the Global Data Plane and Paranoid Stateful Lambda system.  It is inspired by level-tree databases, such as RocksDB, but uses DataCapsules as its backing storage medium.  Read the full description of CapsuleDB [here](https://www2.eecs.berkeley.edu/Pubs/TechRpts/2022/EECS-2022-168.html). This repo serves as the main development point for future CapsuleDB work.  
 
 ## Building and Running
 
@@ -156,7 +156,8 @@ There is lots to do on CapsuleDB!  Here is a short list of things that still nee
 - [ ] Investigate Bloom Filters
 - [ ] Update serialization so it does not use a counter
 - [ ] Remove CapsuleDB implementation currently in PSL and convert to either Git submodule or use a Bazel load targeting this repo / version (hooray for modularity! :tada:)
-- [ ] Update README with description of how CapsuleDB actually works under the hood
+- [x] Update README with description of how CapsuleDB actually works under the hood
+- [ ] Explore adding a wiki for CapsuleDB
 - [ ] Add option to compress CapsuleBlocks by using block write time as timestamp
 - [ ] Add failure restoration / startup from index
 - [ ] Add key deletion (must be local, no mechanism to do so from DC yet)
